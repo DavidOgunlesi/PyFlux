@@ -14,7 +14,7 @@ from core.runtime import Runtime
 from core.scene import Scene
 from core.shader import Shader
 from core.texture import Texture
-
+from core.components.camera import Camera
 FLOAT_SIZE = 4
 
 vertices=[
@@ -166,6 +166,13 @@ def render(shader: Shader, texture: Texture, vaoID):
 
 def ConstructScene():
     scene = Scene()
+    
+    camObj = Object()
+    cam = Camera()
+    camObj.AddComponent(cam)
+    camObjInst = scene.Instantiate(camObj)
+    
+    scene.SetMainCamera(camObjInst.FindComponentOfType(Camera))
     
     testObj = Object()
     mesh = Mesh(vertices, triangles)

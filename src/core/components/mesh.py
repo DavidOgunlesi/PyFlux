@@ -86,11 +86,9 @@ class Mesh(Component):
         self.material.texture.use()
         
         modelMtx = self.transform.GetPoseMatrix()
+        viewMtx = self.scene.mainCamera.viewMatrix
+        projection = self.scene.mainCamera.projection
         
-        idty = glm.mat4(1.0)
-        viewMtx = glm.translate(idty, glm.vec3(0.0, 0.0, -3.0)) 
-        
-        projection = glm.perspective(glm.radians(95.0), 800.0 / 600.0, 0.1, 100.0)
         
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
