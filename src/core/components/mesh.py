@@ -8,14 +8,19 @@ import pygame as pg
 from core.constants import FLOAT_SIZE
 from core.material import Material
 from pygame.locals import *
-
+from typing import List
 from core.component import Component
 
 
 class Mesh(Component):
-    def __init__(self, vertexData: np.array, faceData: np.array):
-        self.vertexData = vertexData
-        self.faceData = faceData
+    def __init__(self, vertices: List[List[float]], triangles: List[int], colors: List[List[float]], uvs: List[List[float]], normals = List[List[float]]):
+        self.vertices = vertices
+        self.triangles = triangles
+        self.colors = colors
+        self.uvs = uvs
+        self.normals = self.CalculateNormals()
+        self.vertexData = self.GenerateVertexAttribDataCollection()
+        self.faceData = list(range(0, len(self.triangles)))
         self.VAO = self.GenerateVAO()
     
     def Start(self):
@@ -31,8 +36,48 @@ class Mesh(Component):
     def ToArr(self, vectorList, datatype):
         return np.array(vectorList, datatype)
     
-    def GenerateVAO(self):
+    def GenerateVertexAttribDataCollection(self) :
+        vertexData = []
+        for idx, vert_index in enumerate(self.triangles):
+            
+            #if self.uvInterpretMode == Mesh.UVInterpretMode.VERTEX:
+              #  uv = self.uvs[vert_index]
+            #elif self.uvInterpretMode == Mesh.UVInterpretMode.FACE:
+            
+            data = self.vertices[vert_index] + self.colors[vert_index] + self.uvs[idx] + self.normals[idx]
+            vertexData.append(data)
         
+        vertexData = sum(vertexData, [])
+        return vertexData
+    
+    def CalculateNormals(self):
+        """
+        Calculate normals automatically from triangles an vertices. 
+        Not recommended for complex meshes!
+        """
+        normals = []
+        # loop through all faces
+        triIdx = 0
+        
+        while triIdx != len(self.triangles):
+            # Get face vertices
+            rV = glm.vec3(self.vertices[self.triangles[triIdx]])
+            aV = glm.vec3(self.vertices[self.triangles[triIdx+1]])
+            bV= glm.vec3(self.vertices[self.triangles[triIdx+2]])
+            
+            # Get both face vectors
+            fV1 = aV - rV
+            fV2 = bV - rV
+            
+            # Calculate cross product and use as normal
+            crossVector = glm.cross(fV2, fV1)
+            normals.append(crossVector.to_list())
+            normals.append(crossVector.to_list())
+            normals.append(crossVector.to_list())
+            triIdx+=3
+        return normals
+    
+    def GenerateVAO(self):
         # We need tio tell opengl how to proc4ess vertex data and how to send that
         # data to the shaders
         
@@ -57,17 +102,22 @@ class Mesh(Component):
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, eboID)
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, self.ToArr(self.faceData, np.uint32), gl.GL_STATIC_DRAW)
         
+        numOfAttribComponents = 11
         #vertex position
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 8*FLOAT_SIZE, ctypes.c_void_p(0))
+        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents*FLOAT_SIZE, ctypes.c_void_p(0))
         gl.glEnableVertexAttribArray(0)
         
         #vertex color
-        gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 8*FLOAT_SIZE, ctypes.c_void_p(3*FLOAT_SIZE))
+        gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents*FLOAT_SIZE, ctypes.c_void_p(3*FLOAT_SIZE))
         gl.glEnableVertexAttribArray(1)
         
         #vertex uv
-        gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 8*FLOAT_SIZE, ctypes.c_void_p(6*FLOAT_SIZE))
+        gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents*FLOAT_SIZE, ctypes.c_void_p(6*FLOAT_SIZE))
         gl.glEnableVertexAttribArray(2)
+        
+        #vertex normals
+        gl.glVertexAttribPointer(3, 3, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents*FLOAT_SIZE, ctypes.c_void_p(8*FLOAT_SIZE))
+        gl.glEnableVertexAttribArray(3)
         
         # Unbind VAO so it isn't accidently modified
         gl.glBindVertexArray(0) 
@@ -93,11 +143,16 @@ class Mesh(Component):
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
         self.material.shader.setMat4("projection", glm.value_ptr(projection))
+        self.material.shader.setVec3("lightColor", glm.vec3(1,1,1).to_list())
+        self.material.shader.setVec3("lightPos", self.scene.mainLight.transform.position.to_list())
+        self.material.shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
+        self.material.shader.setVec3("ambientColor", glm.vec3(0.2,0.2,0.2).to_list())
         
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
-        gl.glDrawElements(gl.GL_TRIANGLES, len(self.vertexData), gl.GL_UNSIGNED_INT, None)
+        
+        gl.glDrawElements(gl.GL_TRIANGLES, len(self.triangles), gl.GL_UNSIGNED_INT, None)
         
         self.material.shader.free()
         self.material.texture.free()

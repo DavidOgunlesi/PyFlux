@@ -6,6 +6,7 @@ class Scene:
     def __init__(self):
         self.__objects: List[Object] = []
         self.mainCamera = None
+        self.mainLight = None
         
     def Instantiate(self, obj: Object) -> Object:
         obj = copy.deepcopy(obj)
@@ -32,3 +33,6 @@ class Scene:
     
     def SetMainCamera(self, camera:Camera):
         self.mainCamera = camera
+        
+    def SetMainLight(self, obj: Object):
+        self.mainLight = obj

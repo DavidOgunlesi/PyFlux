@@ -17,11 +17,19 @@ class Shader:
         # Compile vertex shader
         gl.glShaderSource(vertexShaderID, v_shader)
         gl.glCompileShader(vertexShaderID)
-        
+        # print compile errors if any
+        if not gl.glGetShaderiv(vertexShaderID, gl.GL_COMPILE_STATUS):
+            msg = gl.glGetShaderInfoLog(vertexShaderID)
+            print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n", msg)
+            
         # Compile fragment shader
         gl.glShaderSource(fragShaderID, f_shader)
         gl.glCompileShader(fragShaderID)
-        
+        # print compile errors if any
+        if not gl.glGetShaderiv(fragShaderID, gl.GL_COMPILE_STATUS):
+            msg = gl.glGetShaderInfoLog(fragShaderID)
+            print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n", msg)
+            
         # bind shaders to program object
         
         # Create program object
@@ -58,4 +66,5 @@ class Shader:
     def setMat4(self, attribName:str, value):
         gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, gl.GL_FALSE, value)
 
-        
+    def setVec3(self, attribName:str, value):
+        gl.glUniform3fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
