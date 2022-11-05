@@ -19,20 +19,36 @@ class Camera(Component):
     def __init__(self):
         self.viewMatrix = glm.mat4(1.0)
         self.projection = None
-        self.SetPerspective()
         self.cameraSpeed = 10
         self.sensitivity = 1
         self.yaw = 90
         self.pitch = 0
         self.cameraFront = glm.vec3()
         self.cameraUp = glm.vec3()
+        self.fov = 90
+        self.zoomFactor = 1
+        self.zoomSpeed = 50
+        self.near = 0.1
+        self.far = 100
+        self.left:float = 0
+        self.right:float = 8
+        self.bottom: float = 0
+        self.top:float = 6
+        self.projType = 0
         
     def Start(self):
         self.transform.position = glm.vec3(0, 0, -5)
     
     def Update(self):
-        self.DoCameraInputs()
+        if self.projType == 0:
+            self.projection = glm.perspective(glm.radians(self.fov*self.zoomFactor), 800.0 / 600.0, self.near, self.far)
+        else:
+            self.projection = glm.ortho(self.left*self.zoomFactor, self.right*self.zoomFactor, self.bottom*self.zoomFactor, self.top*self.zoomFactor, self.near, self.far)
+            glm.ortho(0.0, 4.0, 0.0, 3.0, 0.1, 100.0)
+            
+        self.DoCameraMovement()
         self.DoMouseLook()
+        self.DoCameraZoom()
         self.viewMatrix = self.GetViewMatrix()
     
     def DoMouseLook(self):
@@ -56,12 +72,16 @@ class Camera(Component):
         direction.y = math.sin(glm.radians(self.pitch))
         direction.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
         self.cameraFront = glm.normalize(direction)
-        
     
-    def DoCameraInputs(self):
-        if input.GetKeyPressed(pg.K_w):
+    def DoCameraZoom(self):
+        _,sy = input.GetMouseWheel()
+        self.zoomFactor -= sy * self.zoomSpeed * gm.deltaTime
+        self.zoomFactor = min(max(self.zoomFactor, 0), 10)
+    
+    def DoCameraMovement(self):
+        if input.GetKeyPressed(pg.K_w) and self.projType == 0:
             self.transform.position +=  self.cameraSpeed * self.cameraFront * gm.deltaTime
-        if input.GetKeyPressed(pg.K_s):
+        if input.GetKeyPressed(pg.K_s) and self.projType == 0:
             self.transform.position -=  self.cameraSpeed * self.cameraFront * gm.deltaTime
         if input.GetKeyPressed(pg.K_a):
             self.transform.position -=  self.cameraSpeed * glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * gm.deltaTime
@@ -77,10 +97,20 @@ class Camera(Component):
             self.transform.position -=  self.cameraSpeed * up * gm.deltaTime
     
     def SetPerspective(self, fov: float = 95, near:float = 0.1, far:float = 100):
-        self.projection = glm.perspective(glm.radians(fov), 800.0 / 600.0, near, far)
+        self.fov = fov
+        self.near = near
+        self.far = far
+        self.projType = 0
         
-    def SetOrthographic(self, left:float = 0, right:float = 800, bottom: float = 600 ,top:float = 100, near:float = 0.1, far:float = 100):
-        self.projection = glm.ortho(left, right, bottom, top, near, far)
+    def SetOrthographic(self, left:float = 0, right:float = 8, bottom: float = 0 ,top:float = 6, near:float = 0.1, far:float = 100):
+        self.near = near
+        self.far = far
+        self.left = left, 
+        self.right = right, 
+        self.bottom = bottom,
+        self.top = top
+        self.projType = 1
+
     
     def GetViewMatrix(self):
         #origin to pos
