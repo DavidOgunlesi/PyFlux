@@ -31,7 +31,7 @@ def ConstructScene():
     
     light = Object()
     lightmesh = PRIMITIVE.CUBE()
-    lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png")))
+    lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     light.AddComponent(lightmesh)
     o = scene.Instantiate(light)
     o.transform.position = glm.vec3(3,3,3)
@@ -39,7 +39,7 @@ def ConstructScene():
     
     testObj = Object()
     mesh = PRIMITIVE.CUBE()
-    mesh.SetMaterial(Material(Shader("vertex", "fragment"), Texture("textures/cat.png")))
+    mesh.SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(mesh)
     scene.Instantiate(testObj)
     

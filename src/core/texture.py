@@ -37,10 +37,4 @@ class Texture:
         
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
         
-    def use(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.textureID)
-        
-    def free(self):
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
         

@@ -133,7 +133,8 @@ class Mesh(Component):
         # Every drawing call after this point will use the prgram and it's shaders
         # and also all the VBOs defined in the VAO
         self.material.shader.use()
-        self.material.texture.use()
+        self.material.use()
+        self.material.SetProperties()
         
         modelMtx = self.transform.GetPoseMatrix()
         viewMtx = self.scene.mainCamera.viewMatrix
@@ -143,10 +144,16 @@ class Mesh(Component):
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
         self.material.shader.setMat4("projection", glm.value_ptr(projection))
-        self.material.shader.setVec3("lightColor", glm.vec3(1,1,1).to_list())
         self.material.shader.setVec3("lightPos", self.scene.mainLight.transform.position.to_list())
         self.material.shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
-        self.material.shader.setVec3("ambientColor", glm.vec3(0.2,0.2,0.2).to_list())
+        
+        self.material.shader.setVec3("light.ambient",  glm.vec3(0.2, 0.2, 0.2).to_list())
+        self.material.shader.setVec3("light.diffuse",  glm.vec3(0.5, 0.5, 0.5).to_list()) # darken diffuse light a bit
+        self.material.shader.setVec3("light.specular", glm.vec3(1.0, 1.0, 1.0).to_list())
+        
+        ##self.material.shader.setInt("material.diffuse", 0)
+        ##self.material.shader.setInt("material.specular", 1)
+        #self.material.shader.setFloat("material.shininess", 32.0)
         
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!
@@ -155,6 +162,6 @@ class Mesh(Component):
         gl.glDrawElements(gl.GL_TRIANGLES, len(self.triangles), gl.GL_UNSIGNED_INT, None)
         
         self.material.shader.free()
-        self.material.texture.free()
+        self.material.free()
 
     

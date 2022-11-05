@@ -6,37 +6,46 @@ in vec2 TexCoord;
 in vec3 Normal;
 
 uniform sampler2D ourTexture;
-uniform vec3 lightColor;
 uniform vec3 lightPos;
 uniform vec3 cameraPos;
-uniform vec3 ambientColor;
+
+struct Light {
+    vec3 position;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform Light light; 
+
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;
+    float shininess;
+}; 
+  
+uniform Material material;
 
 void main()
 {
-    float ambientStrength = 1;
-    float specularStrength = 1;
+    // ambient
+    //vec3 ambient = light.ambient * material.ambient;
+  	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
 
-    //Lighting calculation
+    // diffuse 
     vec3 norm = normalize(Normal);
-     //Very costly, better to calculate on CPU and pass into here using uniform!
-     //vec3 norm = mat3(transposeFunc(inverseFunc(gl_ModelViewProjectionMatrix))) * normalize(NormalCoord); 
-    vec3 lightDir = normalize(lightPos - FragPos);  
-
-     //Get diffuse color from dot product
+    vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    //vec3 diffuse = light.diffuse * (diff * material.diffuse);
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
 
-    // Specular lighting
+    // specular
     vec3 viewDir = normalize(cameraPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
+    vec3 reflectDir = reflect(-lightDir, norm);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.specular * (spec *  vec3(texture(material.specular, TexCoord)));  
+        
+    vec3 result = diffuse + specular;
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * lightColor;  
-
-    // Factor in ambient light (shadhow color) and specular
-    vec4 texColor = texture(ourTexture, TexCoord);
-
-    vec3 sum = ambientColor + diffuse + specular;
-    vec4 result = vec4(sum, 1.0) * texColor;
-    gl_FragColor = vec4(result);
+    gl_FragColor = vec4(result, 1.0);
 } 
