@@ -28,7 +28,7 @@ class Shader:
         # print compile errors if any
         if not gl.glGetShaderiv(fragShaderID, gl.GL_COMPILE_STATUS):
             msg = gl.glGetShaderInfoLog(fragShaderID)
-            print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n", msg)
+            print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n", msg)
             
         # bind shaders to program object
         

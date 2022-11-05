@@ -42,7 +42,12 @@ def ConstructScene():
     mesh.SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(mesh)
     scene.Instantiate(testObj)
-    
+    o =scene.Instantiate(testObj)
+    o.transform.position = glm.vec3(10,1,0)
+    o =scene.Instantiate(testObj)
+    o.transform.position = glm.vec3(3,7,2)
+    o =scene.Instantiate(testObj)
+    o.transform.position = glm.vec3(0,4,1)
     #obj = scene.Instantiate(testObj)
     #obj.transform.position = glm.vec3(1,0,0)
     

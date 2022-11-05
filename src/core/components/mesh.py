@@ -144,16 +144,21 @@ class Mesh(Component):
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
         self.material.shader.setMat4("projection", glm.value_ptr(projection))
-        self.material.shader.setVec3("lightPos", self.scene.mainLight.transform.position.to_list())
+        #self.material.shader.setVec3("lightPos", self.scene.mainLight.transform.position.to_list())
         self.material.shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
         
-        self.material.shader.setVec3("light.ambient",  glm.vec3(0.2, 0.2, 0.2).to_list())
-        self.material.shader.setVec3("light.diffuse",  glm.vec3(0.5, 0.5, 0.5).to_list()) # darken diffuse light a bit
-        self.material.shader.setVec3("light.specular", glm.vec3(1.0, 1.0, 1.0).to_list())
+        self.material.shader.setVec3("dirLight.ambient",  glm.vec3(0.2, 0.2, 0.2).to_list())
+        self.material.shader.setVec3("dirLight.diffuse",  glm.vec3(1, 1, 1).to_list()) # darken diffuse light a bit
+        self.material.shader.setVec3("dirLight.specular", glm.vec3(1.0, 1.0, 1.0).to_list())
+        self.material.shader.setVec3("dirLight.direction", glm.vec3(-0.2, -1.0, -0.3).to_list())
+        #self.material.shader.setVec3("light.position", self.scene.mainLight.transform.position.to_list())
         
-        ##self.material.shader.setInt("material.diffuse", 0)
-        ##self.material.shader.setInt("material.specular", 1)
-        #self.material.shader.setFloat("material.shininess", 32.0)
+        #self.material.shader.setFloat("light.constant",  1.0)
+        #self.material.shader.setFloat("light.linear",    0.09)
+        #self.material.shader.setFloat("light.quadratic", 0.032)
+        
+        #self.material.shader.setFloat("light.cutOff",   glm.cos(glm.radians(12.5)))
+        #self.material.shader.setFloat("light.outerCutOff",   glm.cos(glm.radians(15.5)))
         
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!
