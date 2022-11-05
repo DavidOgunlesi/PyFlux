@@ -196,6 +196,8 @@ def main():
     # Enable double frame buffering and tell pygame to use opengl context
     pg.display.set_mode([window_size[0], window_size[1]], DOUBLEBUF|OPENGL)
     
+    pg.mouse.set_visible(False)
+    pg.event.set_grab(True)
     # tell opengl we need a renderering viewport of 800 by 600
     # open gl beind the scenes maps normalised vieewport points i.e. 0 to 1 to pixel coords i.e. 304px to 783px
     # we are telling it to map 0 to 1 to 0 to 800 and 0 to 600 in x and y respectively

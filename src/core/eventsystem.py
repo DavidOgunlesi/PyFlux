@@ -1,28 +1,44 @@
 from __future__ import annotations
-from typing import List, Callable, Tuple, Any
+from typing import List, Callable, Tuple, Any, Dict
 import pygame as pg
 
-eventQueue: List[int] = []
+eventTypeDict: Dict[int, PollEvent] = {}
+eventQueue: List[PollEvent] = []
 
-def pollEvent(event: int, onEvent: Callable):
-    eventQueue.append((event, onEvent))
+class PollEvent:
+    def __init__(self, eventType: int, onEvent: Callable, data):
+        self.eventType = eventType
+        self.onEvent = onEvent
+        self.data = data
+        self.event = None
+
+def pollEvent(eventType: int, onEvent: Callable, **data):
+    if eventType not in eventTypeDict:
+        eventQueue.append(PollEvent(eventType, onEvent, data))
+        eventTypeDict[eventType] = eventType
     
 def ExecuteEvents():
     # for loop through the event queue  
     for event in pg.event.get():
         i = 0
         removeIdxs = []
-        eventsToRun: List[Tuple[Callable, Any]] = []
-        for eventType, onEvent in eventQueue:
-            if event.type == eventType:
+        eventsToRun: List[PollEvent] = []
+        
+        # Collect all satisfied events
+        for pollEvent in eventQueue:
+            if event.type == pollEvent.eventType:
                 removeIdxs.append(i)
-                eventsToRun.append((onEvent, event))
+                pollEvent.event = event
+                eventsToRun.append(pollEvent)
             i+=1
             
+        # Execute all satisfied events
         for idx, item in enumerate(removeIdxs):
             if item != -1:
                 eventQueue.pop(item)
-                callback, event = eventsToRun[idx]
-                callback(event)
+                eventTypeDict.pop(pollEvent.eventType, None)
+                pollEvent = eventsToRun[idx]
+                pollEvent.onEvent(pollEvent.event, pollEvent.data)
     
+    eventTypeDict.clear()
     eventQueue.clear()

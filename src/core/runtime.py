@@ -26,8 +26,9 @@ class Runtime:
         self.deltaTime = 0
         self.active = False
     
-    def QuitEvent(self, event):
+    def QuitEvent(self, _, __):
         self.active = False
+        
     def test(self):
         print("SADASD")
     def Run(self):
@@ -45,6 +46,9 @@ class Runtime:
             current_time = time.time()
             
             eventsystem.pollEvent(pg.QUIT, self.QuitEvent)
+            
+            if input.GetKeyDown(pg.K_ESCAPE):
+                self.active = False
             
             self.scene.UpdateScene()
             
