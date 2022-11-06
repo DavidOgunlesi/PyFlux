@@ -134,7 +134,7 @@ class Mesh(Component):
         # and also all the VBOs defined in the VAO
         self.material.shader.use()
         self.material.use()
-        self.material.SetProperties()
+        self.material.SetProperties(self.scene.lightCollection)
         
         modelMtx = self.transform.GetPoseMatrix()
         viewMtx = self.scene.mainCamera.viewMatrix
@@ -144,13 +144,14 @@ class Mesh(Component):
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
         self.material.shader.setMat4("projection", glm.value_ptr(projection))
-        #self.material.shader.setVec3("lightPos", self.scene.mainLight.transform.position.to_list())
         self.material.shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
         
-        self.material.shader.setVec3("dirLight.ambient",  glm.vec3(0.2, 0.2, 0.2).to_list())
-        self.material.shader.setVec3("dirLight.diffuse",  glm.vec3(1, 1, 1).to_list()) # darken diffuse light a bit
-        self.material.shader.setVec3("dirLight.specular", glm.vec3(1.0, 1.0, 1.0).to_list())
-        self.material.shader.setVec3("dirLight.direction", glm.vec3(-0.2, -1.0, -0.3).to_list())
+        
+        
+        self.material.shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
+        self.material.shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
+        self.material.shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
+        self.material.shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
         #self.material.shader.setVec3("light.position", self.scene.mainLight.transform.position.to_list())
         
         #self.material.shader.setFloat("light.constant",  1.0)

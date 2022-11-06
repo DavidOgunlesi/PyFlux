@@ -73,20 +73,21 @@ void main()
     // phase 1: Directional lighting
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
     // phase 2: Point lights
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
+    for(int i = 0; i < NR_POINT_LIGHTS; i++){   
         if (pointLights[i].set == false){
             continue;
         }else{
             result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
         } 
+    }   
     // phase 3: Spot lights
-    for(int i = 0; i < NR_SPOT_LIGHTS; i++)
-        if (pointLights[i].set == false){
+    for(int i = 0; i < NR_SPOT_LIGHTS; i++){
+        if (spotLights[i].set == false){
             continue;
         }else{
             result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);
         }
-
+    }
     gl_FragColor = vec4(result, 1.0);
 } 
 

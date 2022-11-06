@@ -17,6 +17,7 @@ from core.texture import Texture
 from core.components.camera import Camera
 from core.primitives import PRIMITIVE
 import glm
+from core.components.light import DirectionalLight, PointLight,SpotLight
 FLOAT_SIZE = 4
 
 def ConstructScene():
@@ -30,12 +31,25 @@ def ConstructScene():
     scene.SetMainCamera(camObjInst.FindComponentOfType(Camera))
     
     light = Object()
+    l = scene.Instantiate(light)
+    
     lightmesh = PRIMITIVE.CUBE()
     lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
-    light.AddComponent(lightmesh)
-    o = scene.Instantiate(light)
-    o.transform.position = glm.vec3(3,3,3)
-    scene.SetMainLight(o)
+    
+    l.transform.position = glm.vec3(3,3,3)
+    l.AddComponent(lightmesh)
+    l.AddComponent(DirectionalLight())
+    l.AddComponent(PointLight())
+    d: DirectionalLight = l.FindComponentOfType(DirectionalLight)
+    d.direction = glm.vec3(-0.2, -1.0, -0.3)
+    scene.SetMainLight(l)
+    
+    light = Object()
+    l = scene.Instantiate(light)
+    l.transform.position = glm.vec3(3,3,3)
+    l.AddComponent(SpotLight())
+    s: SpotLight = l.FindComponentOfType(SpotLight)
+    s.direction = glm.vec3(0, 1, 0)
     
     testObj = Object()
     mesh = PRIMITIVE.CUBE()

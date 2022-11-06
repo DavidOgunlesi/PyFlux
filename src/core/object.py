@@ -33,3 +33,4 @@ class Object:
         for component in self.components:
             if type(component) is _type:
                 return component
+        return None

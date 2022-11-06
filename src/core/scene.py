@@ -2,11 +2,15 @@ from typing import List
 from core.object import Object
 import copy 
 from core.components.camera import Camera
+from core.collections import LightCollection
+from core.components.light import Light, DirectionalLight
 class Scene:
+    
     def __init__(self):
         self.__objects: List[Object] = []
-        self.mainCamera = None
-        self.mainLight = None
+        self.mainCamera:Camera = None
+        self.mainLight: DirectionalLight = None
+        self.lightCollection = LightCollection()
         
     def Instantiate(self, obj: Object) -> Object:
         obj = copy.deepcopy(obj)
@@ -35,4 +39,7 @@ class Scene:
         self.mainCamera = camera
         
     def SetMainLight(self, obj: Object):
-        self.mainLight = obj
+        light = obj.FindComponentOfType(DirectionalLight)
+        if light != None:
+            self.lightCollection.setGlobalLight(light)
+            self.mainLight = light
