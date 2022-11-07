@@ -152,14 +152,7 @@ class Mesh(Component):
         self.material.shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
         self.material.shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
         self.material.shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
-        #self.material.shader.setVec3("light.position", self.scene.mainLight.transform.position.to_list())
         
-        #self.material.shader.setFloat("light.constant",  1.0)
-        #self.material.shader.setFloat("light.linear",    0.09)
-        #self.material.shader.setFloat("light.quadratic", 0.032)
-        
-        #self.material.shader.setFloat("light.cutOff",   glm.cos(glm.radians(12.5)))
-        #self.material.shader.setFloat("light.outerCutOff",   glm.cos(glm.radians(15.5)))
         
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!

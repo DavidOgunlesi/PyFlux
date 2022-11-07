@@ -15,10 +15,10 @@ from core.scene import Scene
 from core.shader import Shader
 from core.texture import Texture
 from core.components.camera import Camera
+from core.components.sprite import SpriteRenderer
 from core.primitives import PRIMITIVE
 import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
-FLOAT_SIZE = 4
 
 def ConstructScene():
     scene = Scene()
@@ -33,23 +33,28 @@ def ConstructScene():
     light = Object()
     l = scene.Instantiate(light)
     
-    lightmesh = PRIMITIVE.CUBE()
-    lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
+    #lightmesh = PRIMITIVE.CUBE()
+    #lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
-    l.transform.position = glm.vec3(3,3,3)
-    l.AddComponent(lightmesh)
+    l.transform.position = glm.vec3(0,0,0)
+    #l.AddComponent(lightmesh)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
     d: DirectionalLight = l.FindComponentOfType(DirectionalLight)
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)
     
-    light = Object()
-    l = scene.Instantiate(light)
-    l.transform.position = glm.vec3(3,3,3)
-    l.AddComponent(SpotLight())
-    s: SpotLight = l.FindComponentOfType(SpotLight)
-    s.direction = glm.vec3(0, 1, 0)
+    # light = Object()
+    # l = scene.Instantiate(light)
+    # l.transform.position = glm.vec3(3,3,3)
+    # l.AddComponent(SpotLight())
+    # s: SpotLight = l.FindComponentOfType(SpotLight)
+    # s.direction = glm.vec3(0, 1, 0)
+    
+    sprPb = Object()
+    spr = scene.Instantiate(sprPb)
+    spr.transform.position = glm.vec3(-3,-3,-3)
+    spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
     
     testObj = Object()
     mesh = PRIMITIVE.CUBE()
@@ -58,12 +63,13 @@ def ConstructScene():
     scene.Instantiate(testObj)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
+    o.transform.rotation = glm.vec3(24,23,1)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(3,7,2)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(0,4,1)
-    #obj = scene.Instantiate(testObj)
-    #obj.transform.position = glm.vec3(1,0,0)
+    obj = scene.Instantiate(testObj)
+    obj.transform.position = glm.vec3(1,0,0)
     
     
     return scene

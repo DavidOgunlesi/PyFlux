@@ -12,7 +12,7 @@ class Texture:
             image = pg.image.load(f'{GetRootPathDir()}/{textureRootPath}{path}')
             image = pg.transform.flip(image, False, True)
             self.width, self.height = image.get_rect().size
-            self.rawTexData = pg.image.tostring(image, "RGB")
+            self.rawTexData = pg.image.tostring(image, "RGBA")
         except:
             print(f"ERROR: Could not load texture at {path}")
             return
@@ -32,7 +32,7 @@ class Texture:
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
         
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, self.width, self.height, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, self.rawTexData)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.width, self.height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, self.rawTexData)
         gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
         
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)

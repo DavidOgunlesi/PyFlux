@@ -55,3 +55,29 @@ class PRIMITIVE:
             0,6,4
         ]
         return Mesh(vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+    
+    @classmethod
+    def QUAD(cls):
+        vertices=[
+            #vPos  color  uv
+            [0,0,0],
+            [1,0,0],
+            [0,1,0],
+            [1,1,0],
+            ]
+        colors=[
+            #vPos
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            ]
+        uvs=[
+            [0,0],[0,1],[1,0],
+            [1,0],[0,1],[1,1],
+            ]
+        triangles = [
+            2,0,3,
+            3,0,1,
+        ]
+        return Mesh(vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)

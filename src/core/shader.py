@@ -68,3 +68,6 @@ class Shader:
 
     def setVec3(self, attribName:str, value):
         gl.glUniform3fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
+        
+    def setVec4(self, attribName:str, value):
+        gl.glUniform4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)

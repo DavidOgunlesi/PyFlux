@@ -117,10 +117,7 @@ class Camera(Component):
         #cameraDirection = glm.normalize(self.transform.position - cameraTarg)
         #cameraRight = glm.normalize(glm.cross(up, cameraDirection))   
         up = glm.vec3(0,1,0)     
-        self.cameraUp = up 
-        #self.transform.rotation = glm.lookAt(glm.vec3(), self.cameraFront, up) * self.transform.rotation
+        self.cameraUp = up
         return glm.lookAt(self.transform.position, self.transform.position + self.cameraFront, self.cameraUp)
-        
-       # return self.transform.GetPoseMatrix(self.transform.PoseOrder.RTS) 
 
     

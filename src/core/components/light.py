@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from core.component import Component
 import glm
+#from core.components.sprite import SpriteRenderer
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -14,6 +15,11 @@ class Light(Component):
         self.ambient = glm.vec3(0.2, 0.2, 0.2)
         self.diffuse = glm.vec3(1, 1, 1)
         self.specular = glm.vec3(1, 1, 1)
+        # if not self.GetComponent(SpriteRenderer):
+        #     self.AddComponent(SpriteRenderer(Texture("textures/light.png")))
+        # else:
+        #     sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
+        #     sprR.SetSprite(Texture("textures/light.png")) 
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
         super().Init(parent, scene, transform)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Type, List
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -19,6 +19,9 @@ class Component:
         
     def GetComponent(self, type: Type) -> Component:
         return self.parent.FindComponentOfType(type)
+    
+    def AddComponent(self, component: Component) -> Component:
+        return self.parent.AddComponent(component)
     
     def Start(self):
         pass
