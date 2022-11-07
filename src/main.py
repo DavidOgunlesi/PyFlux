@@ -33,13 +33,14 @@ def ConstructScene():
     light = Object()
     l = scene.Instantiate(light)
     
-    #lightmesh = PRIMITIVE.CUBE()
-    #lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
+    lightmesh = PRIMITIVE.CUBE()
+    lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
     l.transform.position = glm.vec3(0,0,0)
-    #l.AddComponent(lightmesh)
+    l.AddComponent(lightmesh)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
+    l.transform.rotation = glm.vec3(24,23,1)
     d: DirectionalLight = l.FindComponentOfType(DirectionalLight)
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)

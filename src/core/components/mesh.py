@@ -18,6 +18,7 @@ class Mesh(Component):
         self.triangles = triangles
         self.colors = colors
         self.uvs = uvs
+        self.NormalizeMeshCentre()
         self.normals = self.CalculateNormals()
         self.vertexData = self.GenerateVertexAttribDataCollection()
         self.faceData = list(range(0, len(self.triangles)))
@@ -33,6 +34,25 @@ class Mesh(Component):
     def SetMaterial(self, material:Material):
         self.material = material
     
+    def GetMeshCentre(self):
+        avg = glm.vec3(0,0,0)
+        # Average all vertex positions
+        for vert in self.vertices:
+            avg += vert
+            
+        avg /= len(self.vertices)
+        print(avg)
+        return avg
+    
+    def NormalizeMeshCentre(self):
+        centre = self.GetMeshCentre()
+        # offset verts by average centre to centre mesh in local space
+        for vert in self.vertices:
+            vert[0] -= centre.x
+            vert[1] -= centre.y
+            vert[2] -= centre.z
+        
+                
     def ToArr(self, vectorList, datatype):
         return np.array(vectorList, datatype)
     
