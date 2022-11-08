@@ -17,6 +17,7 @@ class SpriteRenderer(Component):
         if not self.GetComponent(ModelRenderer):
             self.AddComponent(modelRenderer)
             
+        modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
         modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
 
     def Update(self):

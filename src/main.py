@@ -13,7 +13,7 @@ from pygame.locals import *
 from core.runtime import Runtime
 from core.scene import Scene
 from core.shader import Shader
-from core.texture import Texture
+from core.texture import Texture, CubeMap
 from core.components.camera import Camera
 from core.components.sprite import SpriteRenderer
 from core.primitives import PRIMITIVE
@@ -21,8 +21,11 @@ import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
 from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
+
+
 def ConstructScene():
     scene = Scene()
+    
     
     camObj = Object()
     cam = Camera()
@@ -31,9 +34,11 @@ def ConstructScene():
     
     scene.SetMainCamera(camObjInst.FindComponentOfType(Camera))
     
+    scene.SetSkyBox("textures/cubemaps/sky1")
+    
     light = Object()
     l = scene.Instantiate(light)
-    
+
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
@@ -109,6 +114,8 @@ def main():
     gl.glEnable(gl.GL_STENCIL_TEST)
     gl.glEnable(gl.GL_BLEND)
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+    
+    gl.glFrontFace(gl.GL_CCW)
     
     # tell opengl that it should expect vertex arrays
     gl.glEnableClientState(gl.GL_VERTEX_ARRAY)

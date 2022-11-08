@@ -17,9 +17,20 @@ if TYPE_CHECKING:
     from core.material import Material
     
 class Mesh(Component):
+    
+    class CULLMODE:
+        FRONT = 0,
+        BACK = 1,
+        BOTH = 2,
+        NONE = 3
+    
     def __init__(self, type: int, **kwargs):
         self.vertices = kwargs["vertices"]
         self.offset = glm.vec3(0,0,0)
+        self.cullMode = gl.GL_FRONT
+        self.writeDepthMask = True
+        self.viewMtxOverride = False
+        self.viewMtxOverrideValue = glm.mat4(1)
         if type == 0:
             self.EasyConstructMesh(kwargs)
         else:
@@ -56,6 +67,16 @@ class Mesh(Component):
     def Update(self):
         self.Render()
     
+    def SetCullMode(self, cullMode:CULLMODE):
+        if cullMode == self.CULLMODE.FRONT:
+            self.cullMode = gl.GL_FRONT
+        elif cullMode == self.CULLMODE.BACK:
+            self.cullMode = gl.GL_BACK
+        elif cullMode == self.CULLMODE.BOTH:
+            self.cullMode = gl.GL_FRONT_AND_BACK
+        elif cullMode == self.CULLMODE.NONE:
+            self.cullMode = None
+        
     
     def SetMaterial(self, material:Material):
         self.material = material
@@ -170,6 +191,25 @@ class Mesh(Component):
         
         return vaoID
     
+    def ApplyCulling(self):
+        if self.cullMode == None:
+            gl.glDisable(gl.GL_CULL_FACE)  
+            return
+        gl.glEnable(gl.GL_CULL_FACE)
+        gl.glCullFace(self.cullMode)
+    
+    def SetDepthWriting(self, enabled:bool):
+        self.writeDepthMask = enabled
+    
+    def ApplyDepthWriteSetting(self):
+        if self.writeDepthMask:
+            gl.glDepthMask(gl.GL_TRUE)
+        else:
+            gl.glDepthMask(gl.GL_FALSE)
+    
+    def OverrideViewMtx(self):
+        self.viewMtxOverride = True
+        
     def Render(self):
         # Set shader and VAO to be used to render calls 
         # Every drawing call after this point will use the prgram and it's shaders
@@ -179,8 +219,12 @@ class Mesh(Component):
         self.material.SetProperties(self.scene.lightCollection)
         self.transform.pivot = self.offset
         modelMtx = self.transform.GetPoseMatrix()
-        viewMtx = self.scene.mainCamera.viewMatrix
+        # viewMtx = self.scene.mainCamera.viewMatrix
         projection = self.scene.mainCamera.projection
+        if self.viewMtxOverride:
+            viewMtx = self.viewMtxOverrideValue   
+        else:
+            viewMtx = self.scene.mainCamera.viewMatrix
         
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
@@ -194,7 +238,8 @@ class Mesh(Component):
         self.material.shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
         self.material.shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
         
-        
+        self.ApplyCulling()
+        self.ApplyDepthWriteSetting()
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))

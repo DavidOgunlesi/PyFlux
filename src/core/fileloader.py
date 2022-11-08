@@ -62,6 +62,7 @@ class MeshLoader:
                 diffuse_tex = mat["TEXTURES"][assimp_py.TextureType_DIFFUSE]
                 
             mesh = Mesh(1,vertices=verts, triangles=indices,uvs=texcoords, normals=normals)
+            mesh.SetCullMode(Mesh.CULLMODE.BACK)
             mesh.SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
             meshes.addMesh(mesh)
         

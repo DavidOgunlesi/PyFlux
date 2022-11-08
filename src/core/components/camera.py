@@ -29,7 +29,7 @@ class Camera(Component):
         self.zoomFactor = 1
         self.zoomSpeed = 50
         self.near = 0.1
-        self.far = 100
+        self.far = 1000
         self.left:float = 0
         self.right:float = 8
         self.bottom: float = 0

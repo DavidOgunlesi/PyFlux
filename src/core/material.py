@@ -54,10 +54,10 @@ class Material:
     
     def use(self):
         gl.glActiveTexture(gl.GL_TEXTURE0)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.diffuseTex.textureID)
+        self.diffuseTex.use()
         
         gl.glActiveTexture(gl.GL_TEXTURE1)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.specularTex.textureID)
+        self.specularTex.use()
         
     def free(self):
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)

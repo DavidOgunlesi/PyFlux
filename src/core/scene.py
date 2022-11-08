@@ -4,6 +4,7 @@ import copy
 from core.components.camera import Camera
 from core.collections.light import LightCollection
 from core.components.light import Light, DirectionalLight
+from core.components.skybox import Skybox
 class Scene:
     
     def __init__(self):
@@ -43,3 +44,17 @@ class Scene:
         if light != None:
             self.lightCollection.setGlobalLight(light)
             self.mainLight = light
+            
+    def SetSkyBox(self, path):
+        faces = [
+            "right.jpg",
+            "left.jpg",
+            "top.jpg",
+            "bottom.jpg",
+            "front.jpg",
+            "back.jpg"
+            ]
+        skyboxObj = Object()
+        sky = Skybox(path, faces)
+        skyboxObj.AddComponent(sky)
+        skyboxObjInst = self.Instantiate(skyboxObj)
