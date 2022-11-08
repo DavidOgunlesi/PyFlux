@@ -1,3 +1,4 @@
+from __future__ import annotations
 import ctypes
 import time
 
@@ -6,22 +7,47 @@ import numpy as np
 import OpenGL.GL as gl
 import pygame as pg
 from core.constants import FLOAT_SIZE
-from core.material import Material
+
 from pygame.locals import *
 from typing import List
 from core.component import Component
+from typing import TYPE_CHECKING
 
-
+if TYPE_CHECKING:
+    from core.material import Material
+    
 class Mesh(Component):
-    def __init__(self, vertices: List[List[float]], triangles: List[int], colors: List[List[float]], uvs: List[List[float]], normals = List[List[float]]):
-        self.vertices = vertices
-        self.triangles = triangles
-        self.colors = colors
-        self.uvs = uvs
-        self.NormalizeMeshCentre()
-        self.normals = self.CalculateNormals()
-        self.vertexData = self.GenerateVertexAttribDataCollection()
-        self.faceData = list(range(0, len(self.triangles)))
+    def __init__(self, type: int, **kwargs):
+        self.vertices = kwargs["vertices"]
+        self.offset = glm.vec3(0,0,0)
+        if type == 0:
+            self.EasyConstructMesh(kwargs)
+        else:
+            self.ConstructMesh(kwargs)
+    
+    def EasyConstructMesh(self, kwargs):
+        vertices = kwargs["vertices"]
+        triangles = kwargs["triangles"]
+        colors = kwargs["colors"]
+        uvs = kwargs["uvs"]
+        #vertices = self.NormalizeMeshCentre(vertices)
+        normals = self.CalculateNormals(vertices, triangles)
+        self.vertexData = self.GenerateVertexAttribDataCollectionOLD(vertices, triangles, colors, uvs, normals)
+        self.faceData = list(range(0, len(triangles)))
+        self.VAO = self.GenerateVAO()
+    
+    def ConstructMesh(self, kwargs):
+        vertices = kwargs["vertices"]
+        triangles = kwargs["triangles"]
+        uvs = kwargs["uvs"]
+        normals = kwargs["normals"]
+        
+        if uvs == []:
+            uvs = [[1,1]]*(len(vertices))
+            
+        #vertices = self.NormalizeMeshCentre(vertices)
+        self.vertexData = self.GenerateVertexAttribDataCollection(vertices, uvs, normals)
+        self.faceData = np.array(triangles, dtype=np.int32).flatten().tolist()
         self.VAO = self.GenerateVAO()
     
     def Start(self):
@@ -35,42 +61,38 @@ class Mesh(Component):
         self.material = material
     
     def GetMeshCentre(self):
-        avg = glm.vec3(0,0,0)
-        # Average all vertex positions
-        for vert in self.vertices:
-            avg += vert
-            
-        avg /= len(self.vertices)
-        print(avg)
-        return avg
-    
-    def NormalizeMeshCentre(self):
-        centre = self.GetMeshCentre()
-        # offset verts by average centre to centre mesh in local space
-        for vert in self.vertices:
-            vert[0] -= centre.x
-            vert[1] -= centre.y
-            vert[2] -= centre.z
+        return np.average(self.vertices, axis=0)
         
                 
     def ToArr(self, vectorList, datatype):
         return np.array(vectorList, datatype)
     
-    def GenerateVertexAttribDataCollection(self) :
+    def GenerateVertexAttribDataCollectionOLD(self, vertices, triangles, colors, uvs, normals) :
         vertexData = []
-        for idx, vert_index in enumerate(self.triangles):
-            
-            #if self.uvInterpretMode == Mesh.UVInterpretMode.VERTEX:
-              #  uv = self.uvs[vert_index]
-            #elif self.uvInterpretMode == Mesh.UVInterpretMode.FACE:
-            
-            data = self.vertices[vert_index] + self.colors[vert_index] + self.uvs[idx] + self.normals[idx]
+        for idx, vert_index in enumerate(triangles):
+            data = np.concatenate((vertices[vert_index], [1,1,1] ,uvs[idx], normals[idx]), axis=0)
             vertexData.append(data)
-        
-        vertexData = sum(vertexData, [])
+            
         return vertexData
     
-    def CalculateNormals(self):
+    def GenerateVertexAttribDataCollection(self, vertices, uvs, normals) :
+        vertexData = []
+        for i in range(0, len(vertices)):
+            data = np.concatenate((vertices[i][0:3], [1,1,1] ,uvs[i][0:2], normals[i][0:3]), axis=0)
+            vertexData.append(data)
+        return vertexData
+    
+    def GenerateVertexAttribDataCollection_(self, vertices, triangles, colors, uvs, normals) :
+        vertexData = []
+        #print(triangles[0])
+        triangles = np.array(triangles, dtype=np.int32)
+        for face in triangles:
+            for vert_index in face:
+                data = np.concatenate((vertices[vert_index], [1,1,1] ,uvs[vert_index], normals[vert_index]), axis=0)
+                vertexData.append(data.tolist())
+        return vertexData
+    
+    def CalculateNormals(self, vertices, triangles):
         """
         Calculate normals automatically from triangles an vertices. 
         Not recommended for complex meshes!
@@ -79,11 +101,11 @@ class Mesh(Component):
         # loop through all faces
         triIdx = 0
         
-        while triIdx != len(self.triangles):
+        while triIdx != len(triangles):
             # Get face vertices
-            rV = glm.vec3(self.vertices[self.triangles[triIdx]])
-            aV = glm.vec3(self.vertices[self.triangles[triIdx+1]])
-            bV= glm.vec3(self.vertices[self.triangles[triIdx+2]])
+            rV = glm.vec3(vertices[triangles[triIdx]])
+            aV = glm.vec3(vertices[triangles[triIdx+1]])
+            bV= glm.vec3(vertices[triangles[triIdx+2]])
             
             # Get both face vectors
             fV1 = aV - rV
@@ -155,11 +177,10 @@ class Mesh(Component):
         self.material.shader.use()
         self.material.use()
         self.material.SetProperties(self.scene.lightCollection)
-        
+        self.transform.pivot = self.offset
         modelMtx = self.transform.GetPoseMatrix()
         viewMtx = self.scene.mainCamera.viewMatrix
         projection = self.scene.mainCamera.projection
-        
         
         self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
         self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
@@ -177,8 +198,8 @@ class Mesh(Component):
         gl.glBindVertexArray(self.VAO)
         # Actually draw the stuff!
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
-        
-        gl.glDrawElements(gl.GL_TRIANGLES, len(self.triangles), gl.GL_UNSIGNED_INT, None)
+        #gl.glPointSize(10);   
+        gl.glDrawElements(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None)
         
         self.material.shader.free()
         self.material.free()

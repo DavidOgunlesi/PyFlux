@@ -10,7 +10,7 @@ class Texture:
         try:
             # load image
             image = pg.image.load(f'{GetRootPathDir()}/{textureRootPath}{path}')
-            image = pg.transform.flip(image, False, True)
+            image = pg.transform.flip(image, False, False)
             self.width, self.height = image.get_rect().size
             self.rawTexData = pg.image.tostring(image, "RGBA")
         except:

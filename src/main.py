@@ -19,7 +19,8 @@ from core.components.sprite import SpriteRenderer
 from core.primitives import PRIMITIVE
 import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
-
+from core.fileloader import MeshLoader
+from core.components.modelRenderer import ModelRenderer
 def ConstructScene():
     scene = Scene()
     
@@ -33,11 +34,11 @@ def ConstructScene():
     light = Object()
     l = scene.Instantiate(light)
     
-    lightmesh = PRIMITIVE.CUBE()
-    lightmesh.SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
+    #meshRenderer = PRIMITIVE.CUBE()
+    #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
     l.transform.position = glm.vec3(0,0,0)
-    l.AddComponent(lightmesh)
+    #l.AddComponent(meshRenderer)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
     l.transform.rotation = glm.vec3(24,23,1)
@@ -45,23 +46,23 @@ def ConstructScene():
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)
     
-    # light = Object()
-    # l = scene.Instantiate(light)
-    # l.transform.position = glm.vec3(3,3,3)
-    # l.AddComponent(SpotLight())
-    # s: SpotLight = l.FindComponentOfType(SpotLight)
-    # s.direction = glm.vec3(0, 1, 0)
+    light = Object()
+    l = scene.Instantiate(light)
+    l.transform.position = glm.vec3(3,3,3)
+    l.AddComponent(SpotLight())
+    s: SpotLight = l.FindComponentOfType(SpotLight)
+    s.direction = glm.vec3(0, 1, 0)
     
-    sprPb = Object()
-    spr = scene.Instantiate(sprPb)
-    spr.transform.position = glm.vec3(-3,-3,-3)
-    spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
+    # sprPb = Object()
+    # spr = scene.Instantiate(sprPb)
+    # spr.transform.position = glm.vec3(-3,-3,-3)
+    # spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
     
     testObj = Object()
-    mesh = PRIMITIVE.CUBE()
-    mesh.SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
-    testObj.AddComponent(mesh)
-    scene.Instantiate(testObj)
+    meshRenderer = PRIMITIVE.CUBE()
+    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
+    testObj.AddComponent(meshRenderer)
+    
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
@@ -72,7 +73,14 @@ def ConstructScene():
     obj = scene.Instantiate(testObj)
     obj.transform.position = glm.vec3(1,0,0)
     
-    
+    bagObjPrefab = Object()
+    #modelRenderer = ModelRenderer(MeshLoader.Load("bag\source\Survival_BackPack_2.obj"))
+    modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    bagObjPrefab.AddComponent(modelRenderer)
+    bagObj = scene.Instantiate(bagObjPrefab)
+    bagObj.transform.position = glm.vec3(-5,-5,0)
+    bagObj.transform.scale = glm.vec3(1,1,1)
+    bagObj.transform.rotation = glm.vec3(24,23,1)
     return scene
 
 def main():

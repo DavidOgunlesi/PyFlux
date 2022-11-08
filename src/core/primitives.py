@@ -1,5 +1,6 @@
 from core.components.mesh import Mesh
-
+from core.components.modelRenderer import ModelRenderer
+from core.collections.mesh import MeshCollection
 class PRIMITIVE:
     @classmethod
     def CUBE(cls):
@@ -54,7 +55,9 @@ class PRIMITIVE:
             2,6,0,
             0,6,4
         ]
-        return Mesh(vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        mc = MeshCollection()
+        mc.addMesh(Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs))
+        return ModelRenderer(mc)
     
     @classmethod
     def QUAD(cls):
@@ -80,4 +83,7 @@ class PRIMITIVE:
             2,0,3,
             3,0,1,
         ]
-        return Mesh(vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        #return Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        mc = MeshCollection()
+        mc.addMesh(Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs))
+        return ModelRenderer(mc)

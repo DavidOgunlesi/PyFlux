@@ -3,19 +3,21 @@ from core.texture import Texture
 from core.component import Component
 from core.components.mesh import Mesh
 from core.primitives import PRIMITIVE
-from core.material import Material
 from core.shader import Shader
-
+from core.components.modelRenderer import ModelRenderer
 class SpriteRenderer(Component):
     def __init__(self, texture: Texture = None):
         self.texture = texture
         self.color = glm.vec4(1,1,1, 0.5)
     
     def Start(self):
-        if not self.GetComponent(Mesh):
-            self.AddComponent(PRIMITIVE.QUAD())
-        mesh:Mesh = self.GetComponent(Mesh)
-        mesh.SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
+        from core.material import Material
+        
+        modelRenderer = PRIMITIVE.QUAD()
+        if not self.GetComponent(ModelRenderer):
+            self.AddComponent(modelRenderer)
+            
+        modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
 
     def Update(self):
         self.LookAtCamera()
@@ -26,7 +28,7 @@ class SpriteRenderer(Component):
         self.transform.LookAt(self.scene.mainCamera.transform.position)
     
     def RenderSprite(self):
-        mesh:Mesh = self.GetComponent(Mesh)
+        mesh:ModelRenderer = self.GetComponent(ModelRenderer).mesh[0]
         mesh.material.shader.use()
         mesh.material.use()
         

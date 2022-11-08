@@ -2,7 +2,7 @@ from typing import List
 from core.object import Object
 import copy 
 from core.components.camera import Camera
-from core.collections import LightCollection
+from core.collections.light import LightCollection
 from core.components.light import Light, DirectionalLight
 class Scene:
     

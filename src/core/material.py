@@ -3,9 +3,12 @@ from typing import TYPE_CHECKING, List, Type
 import OpenGL.GL as gl
 from core.shader import Shader
 from core.texture import Texture
-from core.collections import LightCollection
+
 from core.components.light import SpotLight, PointLight 
 import glm
+
+if TYPE_CHECKING:
+    from core.collections.light import LightCollection
 class Material:
     def __init__(self, shader: Shader, diffuseTex:Texture = None, specularTex:Texture = None):
         self.shader = shader

@@ -2,7 +2,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from core.component import Component
 import glm
-#from core.components.sprite import SpriteRenderer
+from core.components.sprite import SpriteRenderer
+from core.texture import Texture
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -15,11 +16,14 @@ class Light(Component):
         self.ambient = glm.vec3(0.2, 0.2, 0.2)
         self.diffuse = glm.vec3(1, 1, 1)
         self.specular = glm.vec3(1, 1, 1)
-        # if not self.GetComponent(SpriteRenderer):
-        #     self.AddComponent(SpriteRenderer(Texture("textures/light.png")))
-        # else:
-        #     sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
-        #     sprR.SetSprite(Texture("textures/light.png")) 
+        self.sprite = "textures/light.png"
+        
+    def Start(self):
+        if not self.GetComponent(SpriteRenderer):
+            self.AddComponent(SpriteRenderer(Texture(self.sprite)))
+        else:
+            sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
+            sprR.SetSprite(Texture("textures/light.png")) 
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
         super().Init(parent, scene, transform)
@@ -55,6 +59,7 @@ class SpotLight(DirectionalLight, PointLight):
         PointLight.__init__(self)
         self.cutOff = glm.cos(glm.radians(12.5))
         self.outerCutOff = glm.cos(glm.radians(15.5))
+        self.sprite = "textures/spotlight.png"
         
     def SetCutOff(self, degrees:float):
         self.cutOff = glm.cos(glm.radians(degrees))
