@@ -71,6 +71,12 @@ def ConstructScene():
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
+    
+    testObj = Object()
+    #meshRenderer = PRIMITIVE.CUBE()
+    #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
+    testObj.AddComponent(meshRenderer)
+    
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(3,7,2)
     o =scene.Instantiate(testObj)
@@ -86,6 +92,14 @@ def ConstructScene():
     bagObj.transform.position = glm.vec3(-5,-5,0)
     bagObj.transform.scale = glm.vec3(1,1,1)
     bagObj.transform.rotation = glm.vec3(24,23,1)
+    
+    planeObj = Object()
+    meshRenderer = PRIMITIVE.PLANE()
+    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
+    planeObj.AddComponent(meshRenderer)
+    o = scene.Instantiate(planeObj)
+    o.transform.position = glm.vec3(0,-1,0)
+    o.transform.scale = glm.vec3(21,20,20)
     return scene
 
 def main():

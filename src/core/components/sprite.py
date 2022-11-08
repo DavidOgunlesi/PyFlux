@@ -29,7 +29,7 @@ class SpriteRenderer(Component):
         self.transform.LookAt(self.scene.mainCamera.transform.position)
     
     def RenderSprite(self):
-        mesh:ModelRenderer = self.GetComponent(ModelRenderer).mesh[0]
+        mesh:Mesh = self.GetComponent(ModelRenderer).mesh[0]
         mesh.material.shader.use()
         mesh.material.use()
         

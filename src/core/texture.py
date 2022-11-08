@@ -46,6 +46,9 @@ class Texture:
     def use(self):
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.textureID)
         
+    def free(self):
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        
 class CubeMap(Texture):
     def __init__(self, path:str, faces:List[str], textureRootPath:str="resources/"):
         self.width, self.height = 0, 0
@@ -87,5 +90,8 @@ class CubeMap(Texture):
         
     def use(self):
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.textureID)
+        
+    def free(self):
+        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
         
               

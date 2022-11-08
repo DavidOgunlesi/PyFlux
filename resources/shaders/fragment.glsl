@@ -101,7 +101,7 @@ void main()
 
     vec3 R = envRefract;
     R *= vec3(1, -1, 1);
-    vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir));
+    vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir))  * texture(material.specular, TexCoord);
     gl_FragColor = vec4(result, tex.a) + skyboxContribution;
 } 
 

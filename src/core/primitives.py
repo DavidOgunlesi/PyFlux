@@ -144,3 +144,32 @@ class PRIMITIVE:
         mc = MeshCollection()
         mc.addMesh(Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs))
         return ModelRenderer(mc)
+    
+    @classmethod
+    def PLANE(cls):
+        vertices=[
+            #vPos  color  uv
+            [-1,0,-1],
+            [1,0,-1],
+            [-1,0,1],
+            [1,0,1],
+            ]
+        colors=[
+            #vPos
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            ]
+        uvs=[
+            [0,0],[0,1],[1,0],
+            [1,0],[0,1],[1,1],
+            ]
+        triangles = [
+            2,0,3,
+            3,0,1,
+        ]
+        #return Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        mc = MeshCollection()
+        mc.addMesh(Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs))
+        return ModelRenderer(mc)

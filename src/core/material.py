@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 class Material:
     def __init__(self, shader: Shader, diffuseTex:Texture = None, specularTex:Texture = None):
         self.shader = shader
-        self.diffuseTex = diffuseTex
-        self.specularTex = specularTex
+        self.diffuseTex = diffuseTex or Texture("textures/noTex.png")
+        self.specularTex = specularTex or Texture("textures/noTex.png")
     
     def SetProperties(self, lightCollection: LightCollection):
         self.shader.setInt("material.diffuse", 0)
@@ -53,13 +53,24 @@ class Material:
                 
     
     def use(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0)
-        self.diffuseTex.use()
-        
-        gl.glActiveTexture(gl.GL_TEXTURE1)
-        self.specularTex.use()
+        if self.diffuseTex:
+            gl.glActiveTexture(gl.GL_TEXTURE0)
+            self.diffuseTex.use()
+            
+        if self.specularTex:
+            gl.glActiveTexture(gl.GL_TEXTURE1)
+            self.specularTex.use()
+    
+
         
     def free(self):
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        #gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        if self.diffuseTex:
+            gl.glActiveTexture(gl.GL_TEXTURE0)
+            self.diffuseTex.free()
+            
+        if self.specularTex:
+            gl.glActiveTexture(gl.GL_TEXTURE1)
+            self.specularTex.free()
         
     
