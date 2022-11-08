@@ -41,8 +41,9 @@ class Runtime:
         
         while self.active:
             gl.glClearColor(0, 0, 0, 1)
+            gl.glStencilMask(0xff)
             # Clear color and depth buffers
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
             current_time = time.time()
             
             eventsystem.pollEvent(pg.QUIT, self.QuitEvent)

@@ -60,7 +60,7 @@ def ConstructScene():
     
     testObj = Object()
     meshRenderer = PRIMITIVE.CUBE()
-    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
+    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
     testObj.AddComponent(meshRenderer)
     
     o =scene.Instantiate(testObj)
@@ -84,12 +84,13 @@ def ConstructScene():
     return scene
 
 def main():
-    
+    pg.init()
     # Set the caption of the screen
     pg.display.set_caption('My Window')
     
     window_size = [800, 600]
     
+    pg.display.gl_set_attribute(GL_STENCIL_SIZE, 8)
     # Enable double frame buffering and tell pygame to use opengl context
     pg.display.set_mode([window_size[0], window_size[1]], DOUBLEBUF|OPENGL)
     
@@ -105,6 +106,9 @@ def main():
     
      # Enable depth test to let opengl store depth buffer
     gl.glEnable(gl.GL_DEPTH_TEST)
+    gl.glEnable(gl.GL_STENCIL_TEST)
+    gl.glEnable(gl.GL_BLEND)
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
     
     # tell opengl that it should expect vertex arrays
     gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
