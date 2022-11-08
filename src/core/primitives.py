@@ -60,7 +60,7 @@ class PRIMITIVE:
         return ModelRenderer(mc)
     
     @classmethod
-    def CENTREDCUBE(cls):
+    def UNITCUBE(cls):
         # CUBE
         vertices=[
             #vPos  color  uv

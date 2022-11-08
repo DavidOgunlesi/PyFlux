@@ -15,7 +15,7 @@ class Skybox(Component):
         from core.material import Material
         from core.texture import Texture
         
-        modelRenderer = PRIMITIVE.CENTREDCUBE()
+        modelRenderer = PRIMITIVE.UNITCUBE()
         if not self.GetComponent(ModelRenderer):
             self.AddComponent(modelRenderer)
         

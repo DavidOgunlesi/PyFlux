@@ -117,6 +117,8 @@ def main():
     
     gl.glFrontFace(gl.GL_CCW)
     
+    gl.glEnable(gl.GL_FRAMEBUFFER_SRGB)
+    
     # tell opengl that it should expect vertex arrays
     gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
     
