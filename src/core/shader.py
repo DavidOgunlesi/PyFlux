@@ -1,6 +1,6 @@
 import OpenGL.GL as gl
 from core.util import GetRootPathDir
-
+import glm
 class Shader:
     
     def __init__(self, vertexShaderName: str, fragmentShaderName: str, shaderRootPath = "resources/shaders/"):
@@ -64,7 +64,7 @@ class Shader:
         gl.glUniform1fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
         
     def setMat4(self, attribName:str, value):
-        gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, gl.GL_FALSE, value)
+        gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, gl.GL_FALSE, glm.value_ptr(value))
 
     def setVec3(self, attribName:str, value):
         gl.glUniform3fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)

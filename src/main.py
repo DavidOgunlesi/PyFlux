@@ -21,7 +21,7 @@ import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
 from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
-
+runtime:Runtime = Runtime()
 
 def ConstructScene():
     scene = Scene()
@@ -34,7 +34,7 @@ def ConstructScene():
     
     scene.SetMainCamera(camObjInst.FindComponentOfType(Camera))
     
-    scene.SetSkyBox("textures/cubemaps/sky1")
+    #scene.SetSkyBox("textures/cubemaps/sky1")
     
     light = Object()
     l = scene.Instantiate(light)
@@ -51,6 +51,17 @@ def ConstructScene():
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)
     
+    #render tex
+    ro = Object()
+    renderTex = PRIMITIVE.QUAD()
+    renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
+    renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+    renderTex.mesh[0].renderShadowMap = False
+    ro.AddComponent(renderTex)
+    
+    o = scene.Instantiate(ro)
+    runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
+    
     light = Object()
     l = scene.Instantiate(light)
     l.transform.position = glm.vec3(3,3,3)
@@ -66,6 +77,7 @@ def ConstructScene():
     testObj = Object()
     meshRenderer = PRIMITIVE.CUBE()
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
+    meshRenderer.mesh[0].IgnoreCameraDistance(False)
     testObj.AddComponent(meshRenderer)
     
     o =scene.Instantiate(testObj)
@@ -100,6 +112,7 @@ def ConstructScene():
     o = scene.Instantiate(planeObj)
     o.transform.position = glm.vec3(0,-1,0)
     o.transform.scale = glm.vec3(21,20,20)
+    
     return scene
 
 def main():
@@ -140,8 +153,7 @@ def main():
     gl.glDepthFunc(gl.GL_LESS)
     
     #gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
-    
-    runtime:Runtime = Runtime()
+
     
     scene = ConstructScene()
     

@@ -6,8 +6,6 @@ import ctypes
 import glm
 import time
 
-from src.core.shader import Shader
-from src.core.texture import Texture
 FLOAT_SIZE = 4
 
 vertices=[
@@ -46,13 +44,148 @@ triangles = [
     0,6,4
 ]
 
+class Texture:
+    def __init__(self, path:str):
+        self.width, self.height = 0, 0
+        self.rawTexData = None
+        self.textureID = 0
+        try:
+            # load image
+            image = pg.image.load(f'{path}')
+            image = pg.transform.flip(image, False, False)
+            self.width, self.height = image.get_rect().size
+            self.rawTexData = pg.image.tostring(image, "RGBA")
+        except:
+            print(f"ERROR: Could not load texture at {path}")
+            return
+
+        self.CreateTexture()
+        
+    def CreateTexture(self):
+        if not self.rawTexData:
+            return
+        
+        self.textureID = gl.glGenTextures(1)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.textureID)
+        
+        # set the texture wrapping/filtering options
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+        gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)	
+        gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+        gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.width, self.height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, self.rawTexData)
+        gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
+        
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        
+    def use(self):
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.textureID)
+        
+    def free(self):
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+class Shader:
+    
+    def __init__(self, vertexString: str, fragmentString: str):
+        # Get shader code
+        f_shader:str = fragmentString
+        v_shader:str = vertexString
+        
+        # Create object 
+        vertexShaderID = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+        fragShaderID = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+        
+        # Compile vertex shader
+        gl.glShaderSource(vertexShaderID, v_shader)
+        gl.glCompileShader(vertexShaderID)
+        # print compile errors if any
+        if not gl.glGetShaderiv(vertexShaderID, gl.GL_COMPILE_STATUS):
+            msg = gl.glGetShaderInfoLog(vertexShaderID)
+            print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n", msg)
+            
+        # Compile fragment shader
+        gl.glShaderSource(fragShaderID, f_shader)
+        gl.glCompileShader(fragShaderID)
+        # print compile errors if any
+        if not gl.glGetShaderiv(fragShaderID, gl.GL_COMPILE_STATUS):
+            msg = gl.glGetShaderInfoLog(fragShaderID)
+            print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n", msg)
+            
+        # bind shaders to program object
+        
+        # Create program object
+        shaderProgramID = gl.glCreateProgram()
+        
+        # attach shaders to program
+        gl.glAttachShader(shaderProgramID, vertexShaderID)
+        gl.glAttachShader(shaderProgramID, fragShaderID)
+        
+        # links and package everthing into the program (ins and outs of shaders matched)
+        gl.glLinkProgram(shaderProgramID)
+        
+        # Delete shaders since we have already linked them to the program
+        gl.glDeleteShader(vertexShaderID)
+        gl.glDeleteShader(fragShaderID) 
+        
+        self.shaderProgramID = shaderProgramID
+        
+    def use(self):
+        gl.glUseProgram(self.shaderProgramID)
+     
+    def free(self):
+         gl.glUseProgram(0)
+         
+    def setInt(self, attribName:str, value:int):
+        gl.glUniform1i(gl.glGetUniformLocation(self.shaderProgramID, attribName), value)
+        
+    def setBool(self, attribName:str, value:bool):
+        gl.glUniform1i(gl.glGetUniformLocation(self.shaderProgramID, attribName), value)
+        
+    def setFloat(self, attribName:str, value:float):
+        gl.glUniform1fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
+        
+    def setMat4(self, attribName:str, value):
+        gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, gl.GL_FALSE, value)
+
+    def setVec3(self, attribName:str, value):
+        gl.glUniform3fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
+        
+    def setVec4(self, attribName:str, value):
+        gl.glUniform4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
 
 def ToArr(vectorList, datatype):
     return np.array(vectorList, datatype)
 
 def createGPUData():
+    vertexShader = """
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec3 aColor;
+        layout (location = 2) in vec2 aTexCoord;
+
+
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
+
+        void main()
+        {
+            gl_Position = projection * view * model * vec4(aPos, 1.0);
+        }
+    """
     
-    shader = Shader("vertex", "fragment")
+    fragmentShader = """
+    #version 330 core
+
+    void main()
+    {             
+        gl_FragColor = vec4(1,1,1,1);
+    } 
+    """
+    shader = Shader(vertexShader, fragmentShader)
     texture = Texture("textures/cat.png")
     
     # We need tio tell opengl how to proc4ess vertex data and how to send that

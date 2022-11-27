@@ -17,7 +17,7 @@ class ModelRenderer(Component):
             
     def Update(self):
         for mesh in self.meshCollection.meshes:
-            mesh.Render()
+            mesh.Update()
     
     @property
     def mesh(self):

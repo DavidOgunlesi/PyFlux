@@ -11,10 +11,13 @@ from core.constants import FLOAT_SIZE
 from pygame.locals import *
 from typing import List
 from core.component import Component
-from typing import TYPE_CHECKING
+import core.globals as GLOBAL
+import core.constants as const
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core.material import Material
+    from core.runtime import Runtime
     
 class Mesh(Component):
     
@@ -31,6 +34,8 @@ class Mesh(Component):
         self.writeDepthMask = True
         self.viewMtxOverride = False
         self.viewMtxOverrideValue = glm.mat4(1)
+        self.doViewSorting = False
+        self.renderShadowMap = True
         if type == 0:
             self.EasyConstructMesh(kwargs)
         else:
@@ -65,7 +70,7 @@ class Mesh(Component):
         return super().Start()
     
     def Update(self):
-        self.Render()
+        GLOBAL.CURRENTRENDERCONTEXT.QueueRender(self)
     
     def SetCullMode(self, cullMode:CULLMODE):
         if cullMode == self.CULLMODE.FRONT:
@@ -208,35 +213,55 @@ class Mesh(Component):
             gl.glDepthMask(gl.GL_FALSE)
     
     def OverrideViewMtx(self):
-        self.viewMtxOverride = True
-        
+        self.viewMtxOverride = True 
+    
+    def IgnoreCameraDistance(self, state:bool):
+        self.doViewSorting = not state
+    
+    def GetDistanceToCamera(self):
+        if self.doViewSorting:
+            return glm.distance(self.scene.mainCamera.transform.position, self.transform.position)
+        else:
+            return const.MAX_INT
+    
     def Render(self):
+        from core.material import Material
         # Set shader and VAO to be used to render calls 
         # Every drawing call after this point will use the prgram and it's shaders
-        # and also all the VBOs defined in the VAO
-        self.material.shader.use()
-        self.material.use()
-        self.material.SetProperties(self.scene.lightCollection)
+        # and also all the VBOs defined in the VAO GLOBAL.GLOBAL_RENDERSHADER
+        mat = self.material
+        shader = None
+        if GLOBAL.GLOBAL_RENDERSHADER:
+            shader = GLOBAL.GLOBAL_RENDERSHADER
+            shader.use()
+            mat.use()
+        else: 
+            shader = self.material.shader
+            shader.use()
+            mat.use()
+            mat.SetProperties(self.scene.lightCollection)
+            
         self.transform.pivot = self.offset
         modelMtx = self.transform.GetPoseMatrix()
-        # viewMtx = self.scene.mainCamera.viewMatrix
+        
         projection = self.scene.mainCamera.projection
         if self.viewMtxOverride:
             viewMtx = self.viewMtxOverrideValue   
         else:
             viewMtx = self.scene.mainCamera.viewMatrix
         
-        self.material.shader.setMat4("model", glm.value_ptr(modelMtx))
-        self.material.shader.setMat4("view", glm.value_ptr(viewMtx))
-        self.material.shader.setMat4("projection", glm.value_ptr(projection))
-        self.material.shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
-        
-        
-        
-        self.material.shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
-        self.material.shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
-        self.material.shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
-        self.material.shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
+        shader.setMat4("model", modelMtx)
+        shader.setMat4("view", viewMtx)
+        shader.setMat4("projection", projection)
+        shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
+        #shader.setVec3("test", glm.value_ptr(glm.vec3(1,1,1)))
+        lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
+        shader.setMat4("lightSpaceMatrix",lightSpaceMatrix)
+        shader.setVec3("test", glm.vec3(1,0,0).to_list())
+        shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
+        shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
+        shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
+        shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
         
         self.ApplyCulling()
         self.ApplyDepthWriteSetting()
@@ -246,7 +271,7 @@ class Mesh(Component):
         #gl.glPointSize(10);   
         gl.glDrawElements(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None)
         
-        self.material.shader.free()
-        self.material.free()
+        shader.free()
+        mat.free()
 
     

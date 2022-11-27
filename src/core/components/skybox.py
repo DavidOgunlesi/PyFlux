@@ -26,7 +26,7 @@ class Skybox(Component):
         modelRenderer.mesh[0].SetMaterial(Material(Shader("env/skybox/vertex", "env/skybox/fragment"), cubemap, cubemap))
         modelRenderer.mesh[0].SetDepthWriting(False)
         modelRenderer.mesh[0].OverrideViewMtx()
-        
+        #modelRenderer.mesh[0].IgnoreCameraDistance(True)
     def Update(self):
         pass
         modelRenderer:ModelRenderer = self.GetComponent(ModelRenderer)

@@ -120,9 +120,9 @@ class PRIMITIVE:
     def QUAD(cls):
         vertices=[
             #vPos  color  uv
-            [0,0,0],
-            [1,0,0],
-            [0,1,0],
+            [-1,-1,0],
+            [1,-1,0],
+            [-1,1,0],
             [1,1,0],
             ]
         colors=[
