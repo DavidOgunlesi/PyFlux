@@ -52,15 +52,15 @@ def ConstructScene():
     scene.SetMainLight(l)
     
     #render tex
-    ro = Object()
-    renderTex = PRIMITIVE.QUAD()
-    renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
-    renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    renderTex.mesh[0].renderShadowMap = False
-    ro.AddComponent(renderTex)
+    # ro = Object()
+    # renderTex = PRIMITIVE.QUAD()
+    # renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
+    # renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+    # renderTex.mesh[0].renderShadowMap = False
+    # ro.AddComponent(renderTex)
     
-    o = scene.Instantiate(ro)
-    runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
+    #o = scene.Instantiate(ro)
+    #runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
     
     light = Object()
     l = scene.Instantiate(light)

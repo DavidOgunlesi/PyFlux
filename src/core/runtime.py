@@ -119,9 +119,9 @@ class Runtime:
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT) 
         gl.glActiveTexture(gl.GL_TEXTURE0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.depthMap)
-        self.renderTexMesh.Render()
-        #self.scene.UpdateScene()
-        #self.RenderData()
+        #self.renderTexMesh.Render()
+        self.scene.UpdateScene()
+        self.RenderData()
         
     def GenDepthMap(self):
         depthMapFBO = gl.glGenFramebuffers(1); 
