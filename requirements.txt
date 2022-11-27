@@ -1,6 +1,5 @@
-glm==0.4.3
+assimp_py==1.0.6
 numpy==1.22.3
-pyassimp==4.1.4
 pygame==2.0.1
 PyGLM==2.5.7
 PyOpenGL==3.1.6
