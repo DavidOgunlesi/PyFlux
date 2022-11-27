@@ -18,7 +18,7 @@ class Material:
     def SetProperties(self, lightCollection: LightCollection):
         self.shader.setInt("material.diffuse", 0)
         self.shader.setInt("material.specular", 1)
-        self.shader.setFloat("material.shininess", 32.0)
+        self.shader.setFloat("material.roughness", 32)
         
         for idx, light in enumerate(lightCollection.lights):
             if type(light) == SpotLight:

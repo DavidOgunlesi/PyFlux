@@ -48,7 +48,7 @@ struct SpotLight {
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
-    float shininess;
+    float roughness;
 }; 
 
 uniform Material material;
@@ -106,7 +106,7 @@ void main()
     R *= vec3(1, -1, 1);
     vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir))  * texture(material.specular, TexCoord);
     
-    gl_FragColor = vec4(result, tex.a) + skyboxContribution;
+    gl_FragColor = vec4(result, tex.a) + (skyboxContribution/material.roughness);
 } 
 
 float ShadowCalculation(vec4 fragPosLightSpace){
@@ -127,7 +127,7 @@ float ShadowCalculation(vec4 fragPosLightSpace){
 //Blinn Phong specular
 float CalculateSpecComponent(vec3 lightDir, vec3 normal, vec3 viewDir){
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.roughness);
    //vec3 reflectDir = reflect(-lightDir, normal);  
    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
    return spec;
@@ -148,7 +148,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow){
     vec3 diffuse  = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord)); 
 
-    return ((diffuse + specular));
+    return ((ambient + diffuse + specular));
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
@@ -172,7 +172,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, f
     diffuse  *= attenuation;
     specular *= attenuation; 
 
-    return  (( diffuse + specular));
+    return  ((ambient + diffuse + specular));
 }
 
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
@@ -205,5 +205,5 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, flo
     diffuse  *= intensity;
     specular *= intensity; 
 
-   return  (( diffuse + specular));
+   return  ((ambient + diffuse + specular));
 }

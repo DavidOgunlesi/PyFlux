@@ -42,7 +42,7 @@ def ConstructScene():
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
-    l.transform.position = glm.vec3(1,1,0)
+    l.transform.position = glm.vec3(1,5,0)
     #l.AddComponent(meshRenderer)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
