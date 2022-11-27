@@ -102,7 +102,7 @@ void main()
     float ratio = 1.00 / 4.52;
     vec3 envRefract = refract(viewDir, norm, ratio);
 
-    vec3 R = envRefract;
+    vec3 R = envReflect;
     R *= vec3(1, -1, 1);
     vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir))  * texture(material.specular, TexCoord);
     
@@ -148,7 +148,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow){
     vec3 diffuse  = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord)); 
 
-    return (ambient +  shadow * (diffuse + specular));
+    return ((diffuse + specular));
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
@@ -172,7 +172,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, f
     diffuse  *= attenuation;
     specular *= attenuation; 
 
-    return  (ambient +  shadow * (diffuse + specular));
+    return  (( diffuse + specular));
 }
 
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
@@ -205,5 +205,5 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, flo
     diffuse  *= intensity;
     specular *= intensity; 
 
-   return  (ambient +  shadow * (diffuse + specular));
+   return  (( diffuse + specular));
 }

@@ -80,7 +80,7 @@ class Runtime:
         # sort jobs by distance to camera so that transparent stuff works
         self.renderQueue.sort(key=lambda m: m.GetDistanceToCamera(), reverse=True)
         for job in self.renderQueue:
-            job.Render()
+            job.Render(shadowMap = self.depthMap)
             
         self.renderQueue.clear()
         
@@ -98,29 +98,29 @@ class Runtime:
         SHADOW_HEIGHT = 1024
         # 1. first render to depth map
         gl.glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT)
-        #gl.glViewport(0, 0, 800, 600)
-        gl.glClearColor(0, 0, 0, 1)
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.depthMapFBO)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT) 
+
+        # Rendering from normal camera perspective rn
         shader = Shader("env/lightmap/simpledepth_vert","env/lightmap/null_frag")
         #shader = Shader("vertex","fragment")
         GLOBAL.GLOBAL_RENDERSHADER = shader
-        # gl.glClearColor(0, 0, 0, 1)
         self.scene.UpdateScene()
         self.RenderData()
+
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         GLOBAL.GLOBAL_RENDERSHADER = None
          
     def RenderScene(self):
         gl.glViewport(0, 0, 800, 600)
-        gl.glClearColor(0, 0, 0, 1)
+        # gl.glClearColor(0, 0, 0, 1)
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT) 
-        gl.glActiveTexture(gl.GL_TEXTURE0)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.depthMap)
-        #self.renderTexMesh.Render()
-        self.scene.UpdateScene()
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
+        self.scene.UpdateScene() 
+
+        #self.renderTexMesh.Render(True, self.depthMap)
+
         self.RenderData()
         
     def GenDepthMap(self):
@@ -131,7 +131,7 @@ class Runtime:
         # Create a 2D texture that we'll use as the framebuffer's depth buffer
         depthMap = gl.glGenTextures(1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, depthMap)
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, None)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, None) # Try Zeo
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)

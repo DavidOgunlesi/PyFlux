@@ -12,6 +12,7 @@ class Scene:
         self.mainCamera:Camera = None
         self.mainLight: DirectionalLight = None
         self.lightCollection = LightCollection()
+        self.skybox: Skybox = None
         
     def Instantiate(self, obj: Object) -> Object:
         obj = copy.deepcopy(obj)
@@ -58,3 +59,4 @@ class Scene:
         sky = Skybox(path, faces)
         skyboxObj.AddComponent(sky)
         skyboxObjInst = self.Instantiate(skyboxObj)
+        self.skybox = skyboxObjInst.FindComponentOfType(Skybox)

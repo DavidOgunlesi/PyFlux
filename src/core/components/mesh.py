@@ -36,6 +36,7 @@ class Mesh(Component):
         self.viewMtxOverrideValue = glm.mat4(1)
         self.doViewSorting = False
         self.renderShadowMap = True
+        self.renderPass = True # Whether this should be rendered in normal render pass
         if type == 0:
             self.EasyConstructMesh(kwargs)
         else:
@@ -224,7 +225,10 @@ class Mesh(Component):
         else:
             return const.MAX_INT
     
-    def Render(self):
+    def Render(self, override = False, shadowMap=0):
+        if not (override or self.renderPass):
+            return
+            
         from core.material import Material
         # Set shader and VAO to be used to render calls 
         # Every drawing call after this point will use the prgram and it's shaders
@@ -250,14 +254,20 @@ class Mesh(Component):
         else:
             viewMtx = self.scene.mainCamera.viewMatrix
         
+        if shadowMap != 0:
+            gl.glActiveTexture(gl.GL_TEXTURE10)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
+
+        self.scene.skybox.material.use()
         shader.setMat4("model", modelMtx)
         shader.setMat4("view", viewMtx)
         shader.setMat4("projection", projection)
         shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
-        #shader.setVec3("test", glm.value_ptr(glm.vec3(1,1,1)))
+        shader.setVec3("test", glm.vec3(0,1,1).to_list())
         lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
-        shader.setMat4("lightSpaceMatrix",lightSpaceMatrix)
-        shader.setVec3("test", glm.vec3(1,0,0).to_list())
+        shader.setMat4("lightSpaceMatrix", lightSpaceMatrix)
+        
+        shader.setInt("shadowMap", 10)
         shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
         shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
         shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
@@ -266,11 +276,16 @@ class Mesh(Component):
         self.ApplyCulling()
         self.ApplyDepthWriteSetting()
         gl.glBindVertexArray(self.VAO)
+        
         # Actually draw the stuff!
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
         #gl.glPointSize(10);   
         gl.glDrawElements(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None)
         
+        if shadowMap != 0:
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+            
+        self.scene.skybox.material.free()
         shader.free()
         mat.free()
 

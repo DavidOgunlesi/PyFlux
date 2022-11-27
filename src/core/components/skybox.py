@@ -10,6 +10,7 @@ class Skybox(Component):
     def __init__(self, resourcepath, faces):
         self.resourcepath = resourcepath
         self.faces = faces
+        self.material = None
     
     def Start(self):
         from core.material import Material
@@ -24,6 +25,7 @@ class Skybox(Component):
         
         modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.BACK)
         modelRenderer.mesh[0].SetMaterial(Material(Shader("env/skybox/vertex", "env/skybox/fragment"), cubemap, cubemap))
+        self.material =  modelRenderer.mesh[0].material
         modelRenderer.mesh[0].SetDepthWriting(False)
         modelRenderer.mesh[0].OverrideViewMtx()
         #modelRenderer.mesh[0].IgnoreCameraDistance(True)

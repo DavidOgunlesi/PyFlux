@@ -75,8 +75,8 @@ class CubeMap(Texture):
             return
         
         self.textureID = gl.glGenTextures(1)
+        gl.glActiveTexture(gl.GL_TEXTURE0)
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.textureID)
-        
         for idx, data in enumerate(self.rawTexData):
             gl.glTexImage2D(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx, 0, gl.GL_RGB, self.width, self.height, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, data)
             
@@ -90,8 +90,11 @@ class CubeMap(Texture):
         
     def use(self):
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.textureID)
+        pass
         
     def free(self):
+        # dont free cubemap
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
+        pass
         
               

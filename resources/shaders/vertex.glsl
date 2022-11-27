@@ -23,6 +23,7 @@ void main()
     ourColor = aColor;
     TexCoord = aTexCoord;
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
+    
     //to do generate on CPU
     mat3 NormalMat = mat3(transpose(inverse(model)));
     Normal = NormalMat * aNorm;
