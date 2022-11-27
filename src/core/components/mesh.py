@@ -35,7 +35,7 @@ class Mesh(Component):
         self.viewMtxOverride = False
         self.viewMtxOverrideValue = glm.mat4(1)
         self.doViewSorting = False
-        self.renderShadowMap = True
+        self.castShadows = True
         self.renderPass = True # Whether this should be rendered in normal render pass
         if type == 0:
             self.EasyConstructMesh(kwargs)
@@ -82,8 +82,13 @@ class Mesh(Component):
             self.cullMode = gl.GL_FRONT_AND_BACK
         elif cullMode == self.CULLMODE.NONE:
             self.cullMode = None
-        
     
+    def FlipCullMode(self):
+        if self.cullMode == gl.GL_FRONT:
+            self.cullMode = gl.GL_BACK
+        elif self.cullMode == gl.GL_BACK:
+            self.cullMode = gl.GL_FRONT
+        
     def SetMaterial(self, material:Material):
         self.material = material
     
@@ -258,7 +263,7 @@ class Mesh(Component):
             gl.glActiveTexture(gl.GL_TEXTURE10)
             gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
 
-        self.scene.skybox.material.use()
+        #self.scene.skybox.material.use()
         shader.setMat4("model", modelMtx)
         shader.setMat4("view", viewMtx)
         shader.setMat4("projection", projection)
@@ -285,7 +290,7 @@ class Mesh(Component):
         if shadowMap != 0:
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
             
-        self.scene.skybox.material.free()
+        #self.scene.skybox.material.free()
         shader.free()
         mat.free()
 

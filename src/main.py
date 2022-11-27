@@ -42,7 +42,7 @@ def ConstructScene():
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
-    l.transform.position = glm.vec3(1,5,0)
+    l.transform.position = glm.vec3(1,10,0)
     #l.AddComponent(meshRenderer)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
@@ -56,7 +56,7 @@ def ConstructScene():
     renderTex = PRIMITIVE.QUAD()
     renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
     renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    renderTex.mesh[0].renderShadowMap = False
+    renderTex.mesh[0].castShadows = False
     renderTex.mesh[0].renderPass = False
     ro.AddComponent(renderTex)
     

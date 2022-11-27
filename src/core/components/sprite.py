@@ -9,16 +9,17 @@ class SpriteRenderer(Component):
     def __init__(self, texture: Texture = None):
         self.texture = texture
         self.color = glm.vec4(1,1,1, 0.5)
+        self.modelRenderer = None
     
-    def Start(self):
+    def Awake(self):
         from core.material import Material
-        
-        modelRenderer = PRIMITIVE.QUAD()
+        print("SpriteRenderer awake")
+        self.modelRenderer = PRIMITIVE.QUAD()
         if not self.GetComponent(ModelRenderer):
-            self.AddComponent(modelRenderer)
-            
-        modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-        modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
+            self.AddComponent(self.modelRenderer)
+        print(self.modelRenderer)     
+        self.modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+        self.modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
 
     def Update(self):
         self.LookAtCamera()

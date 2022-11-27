@@ -28,6 +28,8 @@ class Runtime:
         self.renderTexMesh: Mesh = None
         self.renderQueue: List[Mesh] = []
         GLOBAL.CURRENTRENDERCONTEXT = self
+        self.SHADOW_WIDTH = 4096
+        self.SHADOW_HEIGHT = 4096 #1024
     
     def InitRuntime(self):
         if self.scene == None:
@@ -76,28 +78,31 @@ class Runtime:
     def QueueRender(self, mesh: Mesh):
         self.renderQueue.append(mesh)
     
-    def RenderData(self):
+    def RenderData(self, shadowPass):
         # sort jobs by distance to camera so that transparent stuff works
         self.renderQueue.sort(key=lambda m: m.GetDistanceToCamera(), reverse=True)
         for job in self.renderQueue:
-            job.Render(shadowMap = self.depthMap)
-            
+            if not shadowPass:
+                job.Render(shadowMap = self.depthMap)
+            elif job.castShadows:
+                #job.FlipCullMode() # Flip to prevent peter panning
+                job.Render()
+                #job.FlipCullMode()
+                
         self.renderQueue.clear()
         
     def GetLightSpaceTransform(self):
-        near_plane = 1.0 
-        far_plane = 7.5
-        lightProjection = glm.ortho(-10.0, 10.0, -10.0, 10.0, near_plane, far_plane)
+        near_plane = 0
+        far_plane = 75
+        lightProjection = glm.ortho(-80.0, 80.0, -80.0, 80.0, near_plane, far_plane)
         
-        lightView = glm.lookAt(glm.vec3(10,0, 0), glm.vec3(0,0,0), glm.vec3(0,1,0))  
+        lightView = glm.lookAt(self.scene.mainLight.transform.position, glm.vec3(0,0,0), glm.vec3(0,1,0))  
         lightSpaceMatrix = lightProjection * lightView
         return lightSpaceMatrix
         
     def RenderShadowMap(self):  
-        SHADOW_WIDTH = 1024
-        SHADOW_HEIGHT = 1024
         # 1. first render to depth map
-        gl.glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT)
+        gl.glViewport(0, 0, self.SHADOW_WIDTH, self.SHADOW_HEIGHT)
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.depthMapFBO)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT) 
 
@@ -106,7 +111,7 @@ class Runtime:
         #shader = Shader("vertex","fragment")
         GLOBAL.GLOBAL_RENDERSHADER = shader
         self.scene.UpdateScene()
-        self.RenderData()
+        self.RenderData(True)
 
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         GLOBAL.GLOBAL_RENDERSHADER = None
@@ -121,21 +126,21 @@ class Runtime:
 
         #self.renderTexMesh.Render(True, self.depthMap)
 
-        self.RenderData()
+        self.RenderData(False)
         
     def GenDepthMap(self):
-        depthMapFBO = gl.glGenFramebuffers(1); 
-        SHADOW_WIDTH = 1024
-        SHADOW_HEIGHT = 1024
+        depthMapFBO = gl.glGenFramebuffers(1);
 
         # Create a 2D texture that we'll use as the framebuffer's depth buffer
         depthMap = gl.glGenTextures(1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, depthMap)
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, None) # Try Zeo
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_DEPTH_COMPONENT, self.SHADOW_WIDTH, self.SHADOW_HEIGHT, 0, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, None) # Try Zeo
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        borderColor = glm.vec4(1, 1, 1, 1)
+        gl.glTexParameterfv(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_BORDER_COLOR, borderColor.to_list());  
           
         # Attach it as the framebuffer's depth buffer:
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, depthMapFBO)

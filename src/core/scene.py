@@ -8,6 +8,7 @@ from core.components.skybox import Skybox
 class Scene:
     
     def __init__(self):
+        self.initialised = False
         self.__objects: List[Object] = []
         self.mainCamera:Camera = None
         self.mainLight: DirectionalLight = None
@@ -27,8 +28,14 @@ class Scene:
         if self.mainCamera == None:
             print("Main Camera not set, scene disabled")
             return
+        print(len(self.__objects))
+        for obj in self.__objects:
+            print("Setting up components")
+            obj.SetupComponents()
+            
         for obj in self.__objects:
             obj.InitialiseComponents()
+        self.initialised = True
             
     def UpdateScene(self):
         if self.mainCamera == None:

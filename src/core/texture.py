@@ -94,7 +94,7 @@ class CubeMap(Texture):
         
     def free(self):
         # dont free cubemap
-        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
+        #gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
         pass
         
               

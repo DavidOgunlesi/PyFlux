@@ -23,6 +23,9 @@ class Component:
     def AddComponent(self, component: Component) -> Component:
         return self.parent.AddComponent(component)
     
+    def Awake(self):
+        pass
+    
     def Start(self):
         pass
     

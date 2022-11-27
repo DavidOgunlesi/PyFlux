@@ -16,6 +16,11 @@ class Object:
         self.scene = scene
         for component in self.components:
             component.Init(parent = self, scene = self.scene, transform = self.transform)
+            
+    def SetupComponents(self):
+        for component in self.components:
+            print("Setting up component: " + str(type(component)))
+            component.Awake()
     
     def InitialiseComponents(self):
         for component in self.components:
@@ -28,6 +33,9 @@ class Object:
     def AddComponent(self, component: Component):
         self.components.append(component)
         component.Init(parent = self, scene = self.scene, transform = self.transform)
+        if self.scene != None and self.scene.initialised:
+            component.Awake()
+            component.Start()
         
     def FindComponentOfType(self, _type: Type) -> Component:
         for component in self.components:

@@ -28,6 +28,7 @@ class Skybox(Component):
         self.material =  modelRenderer.mesh[0].material
         modelRenderer.mesh[0].SetDepthWriting(False)
         modelRenderer.mesh[0].OverrideViewMtx()
+        modelRenderer.mesh[0].castShadows = False
         #modelRenderer.mesh[0].IgnoreCameraDistance(True)
     def Update(self):
         pass

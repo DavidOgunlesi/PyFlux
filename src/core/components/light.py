@@ -18,12 +18,17 @@ class Light(Component):
         self.specular = glm.vec3(1, 1, 1)
         self.sprite = "textures/light.png"
         
-    def Start(self):
+    def Awake(self):
+        print("Light awake")
         if not self.GetComponent(SpriteRenderer):
             self.AddComponent(SpriteRenderer(Texture(self.sprite)))
-        else:
-            sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
-            sprR.SetSprite(Texture("textures/light.png")) 
+        pass
+    
+    def Start(self):
+        print("Light start")
+        sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
+        sprR.SetSprite(Texture("textures/light.png")) 
+        sprR.modelRenderer.mesh[0].castShadows = False
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
         super().Init(parent, scene, transform)
