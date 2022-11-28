@@ -89,7 +89,7 @@ class Runtime:
         for job in self.renderQueue:
             if not shadowPass and job.renderPass:
                 job.Render(shadowMap = self.depthMap)
-            elif job.castShadows and job.renderPass:
+            elif job.castShadows and job.renderPass:    
                 #job.FlipCullMode() # Flip to prevent peter panning
                 job.Render()
                 #job.FlipCullMode()
@@ -152,10 +152,6 @@ class Runtime:
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
         self.scene.UpdateScene() 
-
-        # Post processing stack
-        #self.renderTexMesh.Render(True, self.depthMap)
-
         self.RenderData(False)
         
     def GenDepthMap(self):

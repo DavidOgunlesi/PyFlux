@@ -112,7 +112,6 @@ class PostProcessing(Component):
         
     def freeFBO(self):
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
-        gl.glDisable(gl.GL_DEPTH_TEST)
     
     def GetTextureID(self):
         return self.pingpongTextureIDs[self.currPingPong]
