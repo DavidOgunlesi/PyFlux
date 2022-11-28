@@ -109,12 +109,12 @@ def ConstructScene():
     obj.transform.position = glm.vec3(1,0,0)
     
     bagObjPrefab = Object()
-    #modelRenderer = ModelRenderer(MeshLoader.Load("bag\source\Survival_BackPack_2.obj"))
-    modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    modelRenderer = ModelRenderer(MeshLoader.Load("bag\source\Survival_BackPack_2.obj"))
+    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
     bagObjPrefab.AddComponent(modelRenderer)
     bagObj = scene.Instantiate(bagObjPrefab)
-    bagObj.transform.position = glm.vec3(-5,-5,0)
-    bagObj.transform.scale = glm.vec3(1,1,1)
+    bagObj.transform.position = glm.vec3(0,1,0)
+    bagObj.transform.scale = glm.vec3(.01,.01,.01)
     bagObj.transform.rotation = glm.vec3(24,23,1)
     
     planeObj = Object()

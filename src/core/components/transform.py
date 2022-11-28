@@ -1,8 +1,10 @@
 from __future__ import annotations
+from typing import ClassVar
 from core.component import Component
 import glm
 import math
 import numpy as np
+
 class Transform(Component):
         
     def __init__(self):
@@ -52,6 +54,11 @@ class Transform(Component):
         right = np.sign(dir.z) * self.right
         self.rotation = glm.vec3(glm.dot(up, dir)*90,glm.dot(right, dir)*90,0)
     
+    def TransformPoint(self, point):
+        return self.GetPoseMatrix() * point
+    
+    def InverseTransformPoint(self, point):
+        return glm.inverse(self.GetPoseMatrix()) * point
     
     @property
     def up(self):
@@ -68,7 +75,7 @@ class Transform(Component):
         pivotTrans = glm.translate(idty, self.pivot) 
         rotation = self._rotationMat4
         trans = glm.translate(idty, self.position) 
-        poseMtx =  trans *  rotation * pivotTrans  * scale 
+        poseMtx =  trans *  rotation  * scale * pivotTrans
         return poseMtx
     
         

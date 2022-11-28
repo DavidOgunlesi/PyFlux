@@ -24,17 +24,19 @@ class ModelRenderer(Component):
         return self.meshCollection.meshes
     
     def NormalizeMeshCentre(self):
+        # Get the centre of the mesh (in world space)
         avgCentre = glm.vec3(0,0,0)
         for mesh in self.meshCollection.meshes:
             centre = mesh.GetMeshCentre()
+            
+            # Convert to world space
+            
             avgCentre.x += centre[0]
             avgCentre.y += centre[1]
             avgCentre.z += centre[2]
             
-        #print(avgCentre)
         avgCentre /= self.meshCollection.size
         
         for mesh in self.meshCollection.meshes:
             # offset mesh by average centre to centre mesh in local space
             mesh.offset = -avgCentre
-            #print(mesh.offset, avgCentre)

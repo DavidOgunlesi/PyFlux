@@ -93,7 +93,9 @@ class Mesh(Component):
         self.material = material
     
     def GetMeshCentre(self):
-        return np.average(self.vertices, axis=0)
+        centre = np.average(self.vertices, axis=0)
+        # Convert to vec3
+        return glm.vec3(centre[0], centre[1], centre[2])
         
                 
     def ToArr(self, vectorList, datatype):
