@@ -61,7 +61,7 @@ class Shader:
         gl.glUniform1i(gl.glGetUniformLocation(self.shaderProgramID, attribName), value)
         
     def setFloat(self, attribName:str, value:float):
-        gl.glUniform1fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, value)
+        gl.glUniform1f(gl.glGetUniformLocation(self.shaderProgramID, attribName), value)
         
     def setMat4(self, attribName:str, value):
         gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shaderProgramID, attribName), 1, gl.GL_FALSE, glm.value_ptr(value))

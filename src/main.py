@@ -173,8 +173,7 @@ def main():
     renderer.SetScene(scene)
     
     postProcessing = PostProcessing()
-    postProcessing.AddPostProcessingEffect(PostProcessing.DefaultEffect())
-    postProcessing.AddPostProcessingEffect(PostProcessing.DefaultEffect2())
+    postProcessing.AddPostProcessingEffect(PostProcessing.FilmGrain(1))
     renderer.AddPostProcessing(postProcessing)
     
     renderer.InitRuntime()

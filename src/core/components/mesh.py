@@ -14,7 +14,7 @@ from core.component import Component
 import core.globals as GLOBAL
 import core.constants as const
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
     from core.material import Material
     from core.runtime import Runtime
@@ -272,7 +272,6 @@ class Mesh(Component):
         shader.setVec3("test", glm.vec3(0,1,1).to_list())
         lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
         shader.setMat4("lightSpaceMatrix", lightSpaceMatrix)
-        
         shader.setInt("shadowMap", 10)
         shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
         shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
@@ -295,7 +294,7 @@ class Mesh(Component):
         shader.free()
         mat.free()
         
-    def LightweightRender(self, shader: Shader, texture: Texture):
+    def LightweightRender(self, shader: Shader, texture: Texture, scriptable: Callable = None):
         
         self.transform.pivot = self.offset
         modelMtx = self.transform.GetPoseMatrix()
@@ -307,6 +306,9 @@ class Mesh(Component):
             
         texture.use()
         shader.use()
+        
+        if scriptable:
+            scriptable(shader)
         
         shader.setMat4("model", modelMtx)
         shader.setMat4("view", viewMtx)

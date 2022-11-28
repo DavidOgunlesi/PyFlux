@@ -76,6 +76,7 @@ class Runtime:
             
             eventsystem.ExecuteEvents()
             gametime.deltaTime = time.time() - current_time
+            gametime.time += gametime.deltaTime
             # Flip frame buffers since we are using double buffering
             pg.display.flip()
             
@@ -126,7 +127,12 @@ class Runtime:
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
+
+        # If post processing effects is an odd number, add defualt effect to the end
         
+        if len(self.postProcessor.stack) % 2 != 0:
+            self.postProcessor.AddPostProcessingEffect(PostProcessing.DefaultEffect())
+            
         #1) Render scene to post process framebuffer 1
         self.postProcessor.useFBO()
         self.scene.UpdateScene() 

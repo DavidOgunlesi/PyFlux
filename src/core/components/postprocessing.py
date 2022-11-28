@@ -9,6 +9,7 @@ from core.object import Object
 from core.material import Material
 import OpenGL.GL as gl
 import glm
+import core.gametime as gametime
 
 if TYPE_CHECKING:
     from core.scene import Scene
@@ -19,17 +20,36 @@ class PostProcessing(Component):
         def __init__(self):
             self.shader: Shader = None
             
-            
+        def PassUniforms(self, shader: Shader):
+            pass    
         
     class DefaultEffect(Effect):
         def __init__(self):
             #self.shader = Shader("misc/postprocessing/default/vert", "misc/postprocessing/default/frag")
-            self.shader = Shader("misc/rendertexture/vert", "misc/rendertexture/frag")
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/default")
     
-    class DefaultEffect2(Effect):
+    class Grayscale(Effect):
         def __init__(self):
-            #self.shader = Shader("misc/postprocessing/default/vert", "misc/postprocessing/default/frag")
-            self.shader = Shader("misc/rendertexture/vert", "misc/rendertexture/frag2")
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/grayscale")
+    
+    class Inversion(Effect):
+        def __init__(self):
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/inversion")
+            
+    class FilmGrain(Effect):
+        def __init__(self, intensity:float, skipAmount = 1):
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/filmgrain")
+            self.intensity = intensity
+            self.__skip = 0
+            self.skipAmount = skipAmount
+            
+        def PassUniforms(self, shader: Shader):
+            if self.__skip % self.skipAmount == 0:
+                shader.setFloat("time", gametime.time)
+            self.__skip += 1
+            shader.setFloat("intensity", self.intensity)
+            pass
+        
         
     def __init__(self):
         self.stack: List[PostProcessing.Effect] = []
@@ -122,5 +142,5 @@ class PostProcessing(Component):
         
     def RenderQuad(self, textureID: int, effect: PostProcessing.Effect):
         # Render with texture and effect
-        self.renderTextureMesh.LightweightRender(effect.shader, InternalTexture(textureID))
+        self.renderTextureMesh.LightweightRender(effect.shader, InternalTexture(textureID), effect.PassUniforms)
     
