@@ -11,9 +11,12 @@ class Texture:
         self.width, self.height = 0, 0
         self.rawTexData = None
         self.textureID = 0
+        path = self.ValidatePath(f'{rootPath}/{textureRootPath}', path)
+                
         try:
             # load image
-            image = pg.image.load(f'{rootPath}/{textureRootPath}{path}')
+            texpath = f'{rootPath}/{textureRootPath}{path}'
+            image = pg.image.load(texpath)
             image = pg.transform.flip(image, False, False)
             self.width, self.height = image.get_rect().size
             self.rawTexData = pg.image.tostring(image, "RGBA")
@@ -22,6 +25,23 @@ class Texture:
             return
 
         self.CreateTexture()
+        
+    # If file type isnt specified, it will try to load the file with the following extensions in order
+    # .png, .jpg, .jpeg, .bmp
+    def ValidatePath(self, dir:str, path:str):
+        fileExtensions = [".png", ".jpg", ".jpeg", ".bmp"]
+        # Check if the path is a valid file
+        if not os.path.isfile(path):
+            # Check try different path exntensions
+            for ext in fileExtensions:
+                if not path.endswith(ext):
+                    # Check if file exists
+                    if os.path.exists(f'{dir}{path}{ext}'):
+                        path += ext
+                        break
+                else:
+                    break
+        return path
         
     def CreateTexture(self):
         if not self.rawTexData:

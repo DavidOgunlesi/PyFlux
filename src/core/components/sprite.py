@@ -13,11 +13,11 @@ class SpriteRenderer(Component):
     
     def Awake(self):
         from core.material import Material
-        print("SpriteRenderer awake")
+        
         self.modelRenderer = PRIMITIVE.QUAD()
         if not self.GetComponent(ModelRenderer):
             self.AddComponent(self.modelRenderer)
-        print(self.modelRenderer)     
+            
         self.modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
         self.modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
 

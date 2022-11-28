@@ -30,7 +30,7 @@ class Scene:
             return
         print(len(self.__objects))
         for obj in self.__objects:
-            print("Setting up components")
+            #print("Setting up components")
             obj.SetupComponents()
             
         for obj in self.__objects:

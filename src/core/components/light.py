@@ -19,13 +19,11 @@ class Light(Component):
         self.sprite = "textures/light.png"
         
     def Awake(self):
-        print("Light awake")
         if not self.GetComponent(SpriteRenderer):
             self.AddComponent(SpriteRenderer(Texture(self.sprite)))
         pass
     
     def Start(self):
-        print("Light start")
         sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
         sprR.SetSprite(Texture("textures/light.png")) 
         sprR.modelRenderer.mesh[0].castShadows = False

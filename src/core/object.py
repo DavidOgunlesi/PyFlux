@@ -19,7 +19,7 @@ class Object:
             
     def SetupComponents(self):
         for component in self.components:
-            print("Setting up component: " + str(type(component)))
+            #print("Setting up component: " + str(type(component)))
             component.Awake()
     
     def InitialiseComponents(self):
