@@ -24,19 +24,23 @@ class Runtime:
         self.active = False
         self.depthMapFBO = 0
         self.depthMap = 0
+        self.preoccpassFBO = 0
+        self.preoccpass = 0
         self.scene = None
         self.renderTexMesh: Mesh = None
         self.renderQueue: List[Mesh] = []
         GLOBAL.CURRENTRENDERCONTEXT = self
         self.SHADOW_WIDTH = 4096
         self.SHADOW_HEIGHT = 4096 #1024
-        self.postProcessor = None
+        self.postProcessor: PostProcessing = None
+        
     
     def InitRuntime(self):
         if self.scene == None:
             print("Error initialisinf runtime. Scene cannot be null.")
             return
         self.depthMapFBO, self.depthMap = self.GenDepthMap()
+        self.preoccpassFBO, self.preoccpass = self.postProcessor.GenEffectBuffer()
         self.postProcessor.InitialiseEffects(self.scene)
         self.scene.StartScene()
         self.active = True
@@ -70,9 +74,16 @@ class Runtime:
             if input.GetKeyDown(pg.K_ESCAPE):
                 self.active = False
                 
+             
+            # self.OcculusionPrePass() TODO: Fix this
+            self.scene.UpdateScene()
             self.RenderShadowMap()
+            self.scene.UpdateScene()
             # Render QUAD
-            self.RenderSceneWithPostProcessing()
+            if self.postProcessor != None and len(self.postProcessor.stack) != 0:
+                self.RenderSceneWithPostProcessing()
+            else:
+                self.RenderSceneWithoutPostProcessing()
             
             eventsystem.ExecuteEvents()
             gametime.deltaTime = time.time() - current_time
@@ -106,6 +117,20 @@ class Runtime:
         lightSpaceMatrix = lightProjection * lightView
         return lightSpaceMatrix
         
+    def OcculusionPrePass(self):
+        # 1. first render to depth map
+        gl.glViewport(0, 0, 800, 600)
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.preoccpassFBO)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
+
+        shader = Shader("preoccpass/vert","preoccpass/frag")
+        
+        GLOBAL.GLOBAL_RENDERSHADER = shader
+        self.RenderData(False)
+
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        GLOBAL.GLOBAL_RENDERSHADER = None
+        
     def RenderShadowMap(self):  
         # 1. first render to depth map
         gl.glViewport(0, 0, self.SHADOW_WIDTH, self.SHADOW_HEIGHT)
@@ -116,7 +141,7 @@ class Runtime:
         shader = Shader("env/lightmap/simpledepth_vert","env/lightmap/null_frag")
         
         GLOBAL.GLOBAL_RENDERSHADER = shader
-        self.scene.UpdateScene()
+        #self.scene.UpdateScene()
         self.RenderData(True)
 
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
@@ -135,7 +160,6 @@ class Runtime:
             
         #1) Render scene to post process framebuffer 1
         self.postProcessor.useFBO()
-        self.scene.UpdateScene() 
         self.RenderData(False)
         for effect in self.postProcessor.stack:
             #Render Quad with post processing effects with current FBO as texture
@@ -151,13 +175,14 @@ class Runtime:
                 self.postProcessor.useFBO()
                 
             self.postProcessor.RenderQuad(currentTex, effect)
+        
+        self.postProcessor.freeFBO()
          
-    def RenderScene(self):
+    def RenderSceneWithoutPostProcessing(self):
         gl.glViewport(0, 0, 800, 600)
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
-        self.scene.UpdateScene() 
         self.RenderData(False)
         
     def GenDepthMap(self):
@@ -189,4 +214,5 @@ class Runtime:
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
         return depthMapFBO, depthMap
+    
     

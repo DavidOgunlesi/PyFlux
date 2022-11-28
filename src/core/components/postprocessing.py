@@ -10,6 +10,7 @@ from core.material import Material
 import OpenGL.GL as gl
 import glm
 import core.gametime as gametime
+import core.globals as GLOBAL
 
 if TYPE_CHECKING:
     from core.scene import Scene
@@ -50,6 +51,16 @@ class PostProcessing(Component):
             shader.setFloat("intensity", self.intensity)
             pass
         
+    class VolumetricLightShaft(Effect):
+        def __init__(self):
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/volumetric/lightshaft")
+        
+        def PassUniforms(self, shader: Shader):
+            shader.setVec3("LightPos", glm.vec3(100, 100, 100).to_list())
+            gl.glActiveTexture(gl.GL_TEXTURE15)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, GLOBAL.CURRENTRENDERCONTEXT.preoccpass)
+            shader.setInt("occulusionMap", 15)
+            pass
         
     def __init__(self):
         self.stack: List[PostProcessing.Effect] = []

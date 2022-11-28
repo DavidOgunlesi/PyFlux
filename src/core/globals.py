@@ -1,6 +1,11 @@
+from __future__ import annotations
 import glm
-from core.shader import Shader
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from core.runtime import Runtime
+    from core.shader import Shader
+    
 GLOBAL_TRANSFORM = glm.mat4(1)
 GLOBAL_RENDERSHADER: Shader = None
-CURRENTRENDERCONTEXT = None
+CURRENTRENDERCONTEXT:Runtime = None
