@@ -3,9 +3,7 @@ import OpenGL.GL as gl
 from core.util import GetRootPathDir
 import os
 from typing import List
-
- 
-
+        
 class Texture:
     def __init__(self, path:str, textureRootPath:str="resources/", rootPath:str=GetRootPathDir()):
         self.width, self.height = 0, 0
@@ -117,4 +115,10 @@ class CubeMap(Texture):
         #gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
         pass
         
-              
+class InternalTexture(Texture):
+    def __init__(self, textureID:int):
+        self.textureID = textureID
+        
+    def use(self):
+        gl.glActiveTexture(gl.GL_TEXTURE0)
+        Texture.use(self)

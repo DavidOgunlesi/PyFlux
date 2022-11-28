@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core.material import Material
     from core.runtime import Runtime
+    from core.shader import Shader
+    from core.texture import Texture
     
 class Mesh(Component):
     
@@ -232,10 +234,7 @@ class Mesh(Component):
         else:
             return const.MAX_INT
     
-    def Render(self, override = False, shadowMap=0):
-        if not (override or self.renderPass):
-            return
-            
+    def Render(self, shadowMap=0):
         from core.material import Material
         # Set shader and VAO to be used to render calls 
         # Every drawing call after this point will use the prgram and it's shaders
@@ -295,5 +294,33 @@ class Mesh(Component):
         #self.scene.skybox.material.free()
         shader.free()
         mat.free()
+        
+    def LightweightRender(self, shader: Shader, texture: Texture):
+        
+        self.transform.pivot = self.offset
+        modelMtx = self.transform.GetPoseMatrix()
+        projection = self.scene.mainCamera.projection
+        if self.viewMtxOverride:
+            viewMtx = self.viewMtxOverrideValue   
+        else:
+            viewMtx = self.scene.mainCamera.viewMatrix
+            
+        texture.use()
+        shader.use()
+        
+        shader.setMat4("model", modelMtx)
+        shader.setMat4("view", viewMtx)
+        shader.setMat4("projection", projection)
+        shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
+        shader.setInt("tex", 0)
+        
+        self.ApplyCulling()
+        self.ApplyDepthWriteSetting()
+        gl.glBindVertexArray(self.VAO)
+        
+        gl.glDrawElements(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None)
+        
+        shader.free()
+        texture.free()
 
     

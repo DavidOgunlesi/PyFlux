@@ -12,7 +12,7 @@ import core.globals as GLOBAL
 from core.components.mesh import Mesh
 from typing import List
 import glm
-
+from core.components.postprocessing import PostProcessing
 class Runtime:
     
     class RenderJob:
@@ -30,12 +30,14 @@ class Runtime:
         GLOBAL.CURRENTRENDERCONTEXT = self
         self.SHADOW_WIDTH = 4096
         self.SHADOW_HEIGHT = 4096 #1024
+        self.postProcessor = None
     
     def InitRuntime(self):
         if self.scene == None:
             print("Error initialisinf runtime. Scene cannot be null.")
             return
         self.depthMapFBO, self.depthMap = self.GenDepthMap()
+        self.postProcessor.InitialiseEffects(self.scene)
         self.scene.StartScene()
         self.active = True
     
@@ -43,6 +45,9 @@ class Runtime:
         self.scene = scene
         self.deltaTime = 0
         self.active = False
+    
+    def AddPostProcessing(self, postProcessing: PostProcessing):
+        self.postProcessor = postProcessing
     
     def QuitEvent(self, _, __):
         self.active = False
@@ -67,7 +72,7 @@ class Runtime:
                 
             self.RenderShadowMap()
             # Render QUAD
-            self.RenderScene()
+            self.RenderSceneWithPostProcessing()
             
             eventsystem.ExecuteEvents()
             gametime.deltaTime = time.time() - current_time
@@ -82,9 +87,9 @@ class Runtime:
         # sort jobs by distance to camera so that transparent stuff works
         self.renderQueue.sort(key=lambda m: m.GetDistanceToCamera(), reverse=True)
         for job in self.renderQueue:
-            if not shadowPass:
+            if not shadowPass and job.renderPass:
                 job.Render(shadowMap = self.depthMap)
-            elif job.castShadows:
+            elif job.castShadows and job.renderPass:
                 #job.FlipCullMode() # Flip to prevent peter panning
                 job.Render()
                 #job.FlipCullMode()
@@ -108,22 +113,47 @@ class Runtime:
 
         # Rendering from normal camera perspective rn
         shader = Shader("env/lightmap/simpledepth_vert","env/lightmap/null_frag")
-        #shader = Shader("vertex","fragment")
+        
         GLOBAL.GLOBAL_RENDERSHADER = shader
         self.scene.UpdateScene()
         self.RenderData(True)
 
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         GLOBAL.GLOBAL_RENDERSHADER = None
+    
+    def RenderSceneWithPostProcessing(self):
+        gl.glViewport(0, 0, 800, 600)
+        gl.glStencilMask(0xff)
+        # Clear color and depth buffers
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
+        
+        #1) Render scene to post process framebuffer 1
+        self.postProcessor.useFBO()
+        self.scene.UpdateScene() 
+        self.RenderData(False)
+        for effect in self.postProcessor.stack:
+            #Render Quad with post processing effects with current FBO as texture
+            # but render to other FBO
+            currentTex = self.postProcessor.GetTextureID()
+            self.postProcessor.PingPong() # pingpong so we can render to other FBO
+            
+            # If we are at the last effect, render to screen instead of FBO
+            if effect == self.postProcessor.stack[-1]:
+                # Free the FBOs so we can render to the screen normally
+                self.postProcessor.freeFBO()
+            else:
+                self.postProcessor.useFBO()
+                
+            self.postProcessor.RenderQuad(currentTex, effect)
          
     def RenderScene(self):
         gl.glViewport(0, 0, 800, 600)
-        # gl.glClearColor(0, 0, 0, 1)
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
         self.scene.UpdateScene() 
 
+        # Post processing stack
         #self.renderTexMesh.Render(True, self.depthMap)
 
         self.RenderData(False)

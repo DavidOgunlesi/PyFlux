@@ -21,7 +21,8 @@ import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
 from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
-runtime:Runtime = Runtime()
+from core.components.postprocessing import PostProcessing
+renderer:Runtime = Runtime()
 
 def ConstructScene():
     scene = Scene()
@@ -52,16 +53,16 @@ def ConstructScene():
     scene.SetMainLight(l)
     
     # render tex
-    ro = Object()
-    renderTex = PRIMITIVE.QUAD()
-    renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
-    renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    renderTex.mesh[0].castShadows = False
-    renderTex.mesh[0].renderPass = False
-    ro.AddComponent(renderTex)
+    # ro = Object()
+    # renderTex = PRIMITIVE.QUAD()
+    # renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
+    # renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+    # renderTex.mesh[0].castShadows = False
+    # renderTex.mesh[0].renderPass = False
+    # ro.AddComponent(renderTex)
     
-    o = scene.Instantiate(ro)
-    runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
+    # o = scene.Instantiate(ro)
+    #runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
     
     light = Object()
     l = scene.Instantiate(light)
@@ -108,14 +109,14 @@ def ConstructScene():
     obj = scene.Instantiate(testObj)
     obj.transform.position = glm.vec3(1,0,0)
     
-    bagObjPrefab = Object()
-    modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
-    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
-    bagObjPrefab.AddComponent(modelRenderer)
-    bagObj = scene.Instantiate(bagObjPrefab)
-    bagObj.transform.position = glm.vec3(0,1,0)
-    bagObj.transform.scale = glm.vec3(.01,.01,.01)
-    bagObj.transform.rotation = glm.vec3(24,23,1)
+    # bagObjPrefab = Object()
+    # modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
+    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    # bagObjPrefab.AddComponent(modelRenderer)
+    # bagObj = scene.Instantiate(bagObjPrefab)
+    # bagObj.transform.position = glm.vec3(0,1,0)
+    # bagObj.transform.scale = glm.vec3(.01,.01,.01)
+    # bagObj.transform.rotation = glm.vec3(24,23,1)
     
     planeObj = Object()
     meshRenderer = PRIMITIVE.PLANE()
@@ -169,9 +170,15 @@ def main():
     
     scene = ConstructScene()
     
-    runtime.SetScene(scene)
-    runtime.InitRuntime()
-    runtime.Run()
+    renderer.SetScene(scene)
+    
+    postProcessing = PostProcessing()
+    postProcessing.AddPostProcessingEffect(PostProcessing.DefaultEffect())
+    postProcessing.AddPostProcessingEffect(PostProcessing.DefaultEffect2())
+    renderer.AddPostProcessing(postProcessing)
+    
+    renderer.InitRuntime()
+    renderer.Run()
 
 if __name__ == "__main__":
     main()

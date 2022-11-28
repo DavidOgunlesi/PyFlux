@@ -1,0 +1,127 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING, List
+from core.texture import Texture, InternalTexture
+from core.component import Component
+from core.components.mesh import Mesh
+from core.primitives import PRIMITIVE
+from core.shader import Shader
+from core.object import Object
+from core.material import Material
+import OpenGL.GL as gl
+import glm
+
+if TYPE_CHECKING:
+    from core.scene import Scene
+
+class PostProcessing(Component):
+    
+    class Effect:
+        def __init__(self):
+            self.shader: Shader = None
+            
+            
+        
+    class DefaultEffect(Effect):
+        def __init__(self):
+            #self.shader = Shader("misc/postprocessing/default/vert", "misc/postprocessing/default/frag")
+            self.shader = Shader("misc/rendertexture/vert", "misc/rendertexture/frag")
+    
+    class DefaultEffect2(Effect):
+        def __init__(self):
+            #self.shader = Shader("misc/postprocessing/default/vert", "misc/postprocessing/default/frag")
+            self.shader = Shader("misc/rendertexture/vert", "misc/rendertexture/frag2")
+        
+    def __init__(self):
+        self.stack: List[PostProcessing.Effect] = []
+        self.renderTextureMesh: Mesh = None
+        self.pingpongFboIDs = [None, None]
+        self.pingpongTextureIDs = [None, None]
+        self.currPingPong = 0
+        
+    def Awake(self):
+        pass
+
+    def Update(self):
+        pass
+    
+    def AddPostProcessingEffect(self, effect: PostProcessing.Effect):
+        self.stack.append(effect)
+        
+    def GenEffectBuffer(self):
+        FBO = gl.glGenFramebuffers(1)
+
+        # Create a 2D texture that we'll use as the framebuffer's depth buffer
+        tex = gl.glGenTextures(1)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, tex)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, 800, 600, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR )
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+          
+        # Attach it as the framebuffer's depth buffer:
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, FBO)
+        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, tex, 0)
+        
+        # Create renderBuffer object
+        RBO = gl.glGenRenderbuffers(1)
+        gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, RBO)
+        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH24_STENCIL8, 800, 600)
+        gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, 0)
+        gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT, gl.GL_RENDERBUFFER, RBO)
+        
+        # Check if framebuffer is completed with errors
+        if(gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER) == gl.GL_FRAMEBUFFER_COMPLETE):
+            print("SUCCESS")
+        
+        # Unbind framebuffer and texture
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        return FBO, tex
+    
+    # Run by runtime
+    def InitialiseEffects(self, scene: Scene):
+        # Create a quad
+        renderTexObj = Object()
+        renderTexObjInst = scene.Instantiate(renderTexObj) 
+        renderTex = PRIMITIVE.QUAD()
+        #renderTex.mesh[0].SetMaterial(Material(effect.shader))
+        renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+        renderTex.mesh[0].castShadows = False
+        renderTex.mesh[0].renderPass = False
+        renderTexObjInst.AddComponent(renderTex)
+        
+        
+        #Create render textrue and framebuffer
+        FBO, tex = self.GenEffectBuffer()
+        FBO2, tex2 = self.GenEffectBuffer()
+        
+        self.pingpongFboIDs = [FBO, FBO2]
+        self.pingpongTextureIDs = [tex, tex2]
+        
+        self.renderTextureMesh = renderTex.mesh[0]
+    
+    def useFBO(self):
+        fboID = self.pingpongFboIDs[self.currPingPong]
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fboID)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        
+    def useTexture(self):
+        textureID = self.pingpongTextureIDs[self.currPingPong]
+        gl.glBindTexture(gl.GL_TEXTURE_2D, textureID)
+        
+    def freeFBO(self):
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        gl.glDisable(gl.GL_DEPTH_TEST)
+    
+    def GetTextureID(self):
+        return self.pingpongTextureIDs[self.currPingPong]
+    
+    def PingPong(self):
+        # ping pong FBOs
+        self.currPingPong = 1 - self.currPingPong
+        
+    def RenderQuad(self, textureID: int, effect: PostProcessing.Effect):
+        # Render with texture and effect
+        self.renderTextureMesh.LightweightRender(effect.shader, InternalTexture(textureID))
+    
