@@ -11,8 +11,10 @@ class Component:
         self.scene: Scene = None
         self.parent: Object = None
         self.transform: Transform = None
+        self.name = ""
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
+        self.name = parent.name
         self.scene = scene
         self.parent = parent
         self.transform = transform

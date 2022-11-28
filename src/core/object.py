@@ -6,11 +6,12 @@ if TYPE_CHECKING:
     from scene import Scene
 
 class Object:
-    def __init__(self):
+    def __init__(self, name):
         self.components:List[Component] = []
         self.transform = Transform()
         self.components.append(self.transform)
         self.scene = None
+        self.name = name
     
     def Initialise(self, scene: Scene):
         self.scene = scene

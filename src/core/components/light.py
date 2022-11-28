@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class Light(Component):
     
     def __init__(self):
+        Component.__init__(self)
         self.ambient = glm.vec3(0.2, 0.2, 0.2)
         self.diffuse = glm.vec3(1, 1, 1)
         self.specular = glm.vec3(1, 1, 1)

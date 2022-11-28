@@ -65,7 +65,7 @@ class Runtime:
         if not self.active:
             print("Runtime not Initialised. Initialise before calling Run().")
             return
-        
+        print("Running Runtime")
         while self.active:
             current_time = time.time()
             
@@ -84,6 +84,8 @@ class Runtime:
                 self.RenderSceneWithPostProcessing()
             else:
                 self.RenderSceneWithoutPostProcessing()
+                
+            # self.renderTexMesh.Render()
             
             eventsystem.ExecuteEvents()
             gametime.deltaTime = time.time() - current_time

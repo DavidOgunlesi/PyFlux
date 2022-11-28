@@ -28,11 +28,8 @@ class Scene:
         if self.mainCamera == None:
             print("Main Camera not set, scene disabled")
             return
-        print(len(self.__objects))
         for obj in self.__objects:
-            #print("Setting up components")
             obj.SetupComponents()
-            
         for obj in self.__objects:
             obj.InitialiseComponents()
         self.initialised = True
@@ -62,7 +59,7 @@ class Scene:
             "front.jpg",
             "back.jpg"
             ]
-        skyboxObj = Object()
+        skyboxObj = Object("skybox")
         sky = Skybox(path, faces)
         skyboxObj.AddComponent(sky)
         skyboxObjInst = self.Instantiate(skyboxObj)

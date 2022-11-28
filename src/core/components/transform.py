@@ -8,6 +8,7 @@ import numpy as np
 class Transform(Component):
         
     def __init__(self):
+        Component.__init__(self)
         self.position = glm.vec3(0, 0, 0)
         self.scale = glm.vec3(1,1,1)
         self._rotationMat4 = glm.mat4(1)
@@ -69,14 +70,26 @@ class Transform(Component):
     def right(self):
         return glm.vec3(1, 0, 0)    
     
-    def GetPoseMatrix(self):
+    def GetPoseMatrix(self, translation = None, rotation = None, scale = None):
+        if translation is None:
+            translation = self.position
+            
+        if rotation != None:
+            rotationQuat = glm.quat(glm.radians(rotation))
+            rotation = glm.mat4(rotationQuat)
+        else:
+            rotation = self._rotationMat4
+            
+        if scale is None:
+            scale = self.scale
+            
         idty = glm.mat4(1.0)
-        scale = glm.scale(idty, self.scale)
+        scale = glm.scale(idty, scale)
         pivotTrans = glm.translate(idty, self.pivot) 
-        rotation = self._rotationMat4
-        trans = glm.translate(idty, self.position) 
+        trans = glm.translate(idty, translation) 
         poseMtx =  trans *  rotation  * scale * pivotTrans
         return poseMtx
+
     
         
         

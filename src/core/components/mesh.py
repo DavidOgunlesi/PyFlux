@@ -30,7 +30,12 @@ class Mesh(Component):
         NONE = 3
     
     def __init__(self, type: int, **kwargs):
+        Component.__init__(self)
+        print("Mesh init")
         self.vertices = kwargs["vertices"]
+        self.VAO = None
+        self.material = None
+        self.IVA = None
         self.offset = glm.vec3(0,0,0)
         self.cullMode = gl.GL_FRONT
         self.writeDepthMask = True
@@ -39,6 +44,7 @@ class Mesh(Component):
         self.doViewSorting = False
         self.castShadows = True
         self.renderPass = True # Whether this should be rendered in normal render pass
+        self.modelMatrices = []
         if type == 0:
             self.EasyConstructMesh(kwargs)
         else:
@@ -53,7 +59,7 @@ class Mesh(Component):
         normals = self.CalculateNormals(vertices, triangles)
         self.vertexData = self.GenerateVertexAttribDataCollectionOLD(vertices, triangles, colors, uvs, normals)
         self.faceData = list(range(0, len(triangles)))
-        self.VAO = self.GenerateVAO()
+        #self.VAO = self.GenerateVAO()
     
     def ConstructMesh(self, kwargs):
         vertices = kwargs["vertices"]
@@ -67,9 +73,14 @@ class Mesh(Component):
         #vertices = self.NormalizeMeshCentre(vertices)
         self.vertexData = self.GenerateVertexAttribDataCollection(vertices, uvs, normals)
         self.faceData = np.array(triangles, dtype=np.int32).flatten().tolist()
-        self.VAO = self.GenerateVAO()
+        #self.VAO = self.GenerateVAO()
+        
+    def Awake(self):
+        pass
+        
     
     def Start(self):
+        self.VAO, self.IVA = self.GenerateVAO()
         return super().Start()
     
     def Update(self):
@@ -118,7 +129,7 @@ class Mesh(Component):
             vertexData.append(data)
         return vertexData
     
-    def GenerateVertexAttribDataCollection_(self, vertices, triangles, colors, uvs, normals) :
+
         vertexData = []
         #print(triangles[0])
         triangles = np.array(triangles, dtype=np.int32)
@@ -155,6 +166,15 @@ class Mesh(Component):
             triIdx+=3
         return normals
     
+    def ModelMatricesToArr(self, datatype):
+        result = []
+        # Convert each model matrix in self.modelMatrices to a np array
+        for i in range(0, len(self.modelMatrices)):
+            mat4Arr = np.array(self.modelMatrices[i], dtype=datatype)
+            mat4Arr = mat4Arr.flatten()
+            result.append(mat4Arr)
+        return self.ToArr(result, datatype)
+    
     def GenerateVAO(self):
         # We need tio tell opengl how to proc4ess vertex data and how to send that
         # data to the shaders
@@ -166,6 +186,7 @@ class Mesh(Component):
         # Generate EBO
         eboID = gl.glGenBuffers(1)
         
+        ivaID = gl.glGenBuffers(1)
         # Bind VAO so now all the VBO stuff we do below will be stored inside this VAO
         gl.glBindVertexArray(vaoID)
         
@@ -176,9 +197,12 @@ class Mesh(Component):
         # Copy vertex data into current GL_ARRAY_BUFFER which is the object we binded
         gl.glBufferData(gl.GL_ARRAY_BUFFER, self.ToArr(self.vertexData, np.float32), gl.GL_STATIC_DRAW)
         
-        # Bind ebo to GL_ELEMENT_ARRAY_BUFFER object
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, eboID)
-        gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, self.ToArr(self.faceData, np.uint32), gl.GL_STATIC_DRAW)
+        
+        # Bind instance buffers
+        
+        # instanced model matrix arrays
+        if len(self.modelMatrices) == 0:
+            self.modelMatrices.append(self.transform.GetPoseMatrix())
         
         numOfAttribComponents = 11
         #vertex position
@@ -197,6 +221,34 @@ class Mesh(Component):
         gl.glVertexAttribPointer(3, 3, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents*FLOAT_SIZE, ctypes.c_void_p(8*FLOAT_SIZE))
         gl.glEnableVertexAttribArray(3)
         
+        
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, ivaID)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,  self.ModelMatricesToArr(np.float32), gl.GL_STATIC_DRAW)
+        
+        numOfAttribComponents = 16
+        
+        gl.glVertexAttribPointer(4, 4, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents * FLOAT_SIZE, ctypes.c_void_p(0))
+        gl.glEnableVertexAttribArray(4)
+        
+        gl.glVertexAttribPointer(5, 4, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents * FLOAT_SIZE, ctypes.c_void_p(4 * FLOAT_SIZE))
+        gl.glEnableVertexAttribArray(5)
+        
+        gl.glVertexAttribPointer(6, 4, gl.GL_FLOAT, gl.GL_FALSE, numOfAttribComponents * FLOAT_SIZE, ctypes.c_void_p(8 * FLOAT_SIZE))
+        gl.glEnableVertexAttribArray(6); 
+        
+        gl.glVertexAttribPointer(7, 4, gl.GL_FLOAT,gl. GL_FALSE, numOfAttribComponents * FLOAT_SIZE, ctypes.c_void_p(12 * FLOAT_SIZE))
+        gl.glEnableVertexAttribArray(7); 
+
+        # Tell open gl to only change the model matrix for each instance
+        gl.glVertexAttribDivisor(4, 1)
+        gl.glVertexAttribDivisor(5, 1)
+        gl.glVertexAttribDivisor(6, 1)
+        gl.glVertexAttribDivisor(7, 1)
+        
+        # Bind ebo to GL_ELEMENT_ARRAY_BUFFER object
+        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, eboID)
+        gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, self.ToArr(self.faceData, np.uint32), gl.GL_STATIC_DRAW)
+        
         # Unbind VAO so it isn't accidently modified
         gl.glBindVertexArray(0) 
         
@@ -204,7 +256,7 @@ class Mesh(Component):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) 
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0) 
         
-        return vaoID
+        return vaoID, ivaID
     
     def ApplyCulling(self):
         if self.cullMode == None:
@@ -234,7 +286,75 @@ class Mesh(Component):
         else:
             return const.MAX_INT
     
+    def RenderInstanced(self, shadowMap=0):
+        
+        # Update model matrix if we are only rendering one instance
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.IVA)
+        if len(self.modelMatrices) == 1:
+            self.modelMatrices.clear()
+            self.modelMatrices.append(self.transform.GetPoseMatrix())
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.ModelMatricesToArr(np.float32), gl.GL_STATIC_DRAW)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+        
+        # Render as per normal
+        mat = self.material
+        shader = None
+        if GLOBAL.GLOBAL_RENDERSHADER:
+            shader = GLOBAL.GLOBAL_RENDERSHADER
+            shader.use()
+            mat.use()
+        else: 
+            shader = self.material.shader
+            shader.use()
+            mat.use()
+            mat.SetProperties(self.scene.lightCollection)
+            
+        projection = self.scene.mainCamera.projection
+        
+        if self.viewMtxOverride:
+            viewMtx = self.viewMtxOverrideValue   
+        else:
+            viewMtx = self.scene.mainCamera.viewMatrix
+            
+        if shadowMap != 0:
+            gl.glActiveTexture(gl.GL_TEXTURE10)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
+        
+        #self.scene.skybox.material.use()
+        shader.setMat4("view", viewMtx)
+        shader.setMat4("projection", projection)
+        shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
+        shader.setVec3("test", glm.vec3(0,1,1).to_list())
+        lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
+        shader.setMat4("lightSpaceMatrix", lightSpaceMatrix)
+        shader.setInt("shadowMap", 10)
+        shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
+        shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
+        shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
+        shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
+        
+        self.ApplyCulling()
+        self.ApplyDepthWriteSetting()
+        
+        gl.glBindVertexArray(self.VAO)
+        
+        # Actually draw the stuff!
+        #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
+        #gl.glPointSize(10);   
+        gl.glDrawElementsInstanced(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None,  len(self.modelMatrices))
+        
+        if shadowMap != 0:
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+            
+        #self.scene.skybox.material.free()
+        shader.free()
+        mat.free()
+        
+            
+    
     def Render(self, shadowMap=0):
+        self.RenderInstanced(shadowMap)
+        return
         from core.material import Material
         # Set shader and VAO to be used to render calls 
         # Every drawing call after this point will use the prgram and it's shaders
@@ -251,7 +371,7 @@ class Mesh(Component):
             mat.use()
             mat.SetProperties(self.scene.lightCollection)
             
-        self.transform.pivot = self.offset
+            
         modelMtx = self.transform.GetPoseMatrix()
         
         projection = self.scene.mainCamera.projection

@@ -17,6 +17,7 @@ from core.components.transform import Transform
 
 class Camera(Component):
     def __init__(self):
+        Component.__init__(self)
         self.viewMatrix = glm.mat4(1.0)
         self.projection = None
         self.cameraSpeed = 10

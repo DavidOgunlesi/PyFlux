@@ -22,13 +22,22 @@ from core.components.light import DirectionalLight, PointLight,SpotLight
 from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
 from core.components.postprocessing import PostProcessing
+from core.component import Component
+import math
 renderer:Runtime = Runtime()
+
+def GetPoseMatrices(i: int, c:Component, size: int):
+    # Create vectors in a grid based on i index, with spacing
+    spacing = 1
+    vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
+    poseMtx = c.transform.GetPoseMatrix(translation=vec, rotation=glm.vec3(0,0,0), scale=glm.vec3(1,1,1))
+    return poseMtx
 
 def ConstructScene():
     scene = Scene()
     
     
-    camObj = Object()
+    camObj = Object("Camera")
     cam = Camera()
     camObj.AddComponent(cam)
     camObjInst = scene.Instantiate(camObj)
@@ -37,7 +46,7 @@ def ConstructScene():
     
     scene.SetSkyBox("textures/cubemaps/sky1")
     
-    light = Object()
+    light = Object("light")
     l = scene.Instantiate(light)
 
     #meshRenderer = PRIMITIVE.CUBE()
@@ -53,18 +62,18 @@ def ConstructScene():
     scene.SetMainLight(l)
     
     # render tex
-    # ro = Object()
-    # renderTex = PRIMITIVE.QUAD()
-    # renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
-    # renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    # renderTex.mesh[0].castShadows = False
-    # renderTex.mesh[0].renderPass = False
-    # ro.AddComponent(renderTex)
+    ro = Object("render tex")
+    renderTex = PRIMITIVE.QUAD()
+    renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
+    renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+    renderTex.mesh[0].castShadows = False
+    renderTex.mesh[0].renderPass = False
+    ro.AddComponent(renderTex)
     
-    # o = scene.Instantiate(ro)
-    #runtime.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
+    o = scene.Instantiate(ro)
+    renderer.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
     
-    light = Object()
+    light = Object("light")
     l = scene.Instantiate(light)
     l.transform.position = glm.vec3(3,3,3)
     l.AddComponent(SpotLight())
@@ -76,17 +85,19 @@ def ConstructScene():
     # spr.transform.position = glm.vec3(-3,-3,-3)
     # spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
     
-    testObj = Object()
-    meshRenderer = PRIMITIVE.CUBE()
+    testObj = Object("cube")
+    meshRenderer = PRIMITIVE.QUAD()
+    testObj.AddComponent(meshRenderer)
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
     meshRenderer.mesh[0].IgnoreCameraDistance(False)
-    testObj.AddComponent(meshRenderer)
-    
     o =scene.Instantiate(testObj)
+    modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
+    size = 20*20
+    modelRenderer.mesh[0].modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
     
-    testObj = Object()
+    testObj = Object("cube2")
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(meshRenderer)
@@ -96,7 +107,7 @@ def ConstructScene():
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(0,4,1)
 
-    testObj = Object()
+    testObj = Object("cube3")
     meshRenderer = PRIMITIVE.CUBE()
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     meshRenderer.mesh[0].IgnoreCameraDistance(False)
@@ -118,7 +129,7 @@ def ConstructScene():
     # bagObj.transform.scale = glm.vec3(.01,.01,.01)
     # bagObj.transform.rotation = glm.vec3(24,23,1)
     
-    planeObj = Object()
+    planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
     planeObj.AddComponent(meshRenderer)

@@ -7,6 +7,7 @@ from core.shader import Shader
 from core.components.modelRenderer import ModelRenderer
 class SpriteRenderer(Component):
     def __init__(self, texture: Texture = None):
+        Component.__init__(self)
         self.texture = texture
         self.color = glm.vec4(1,1,1, 0.5)
         self.modelRenderer = None

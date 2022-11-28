@@ -63,6 +63,7 @@ class PostProcessing(Component):
             pass
         
     def __init__(self):
+        Component.__init__(self)
         self.stack: List[PostProcessing.Effect] = []
         self.renderTextureMesh: Mesh = None
         self.pingpongFboIDs = [None, None]
@@ -112,7 +113,7 @@ class PostProcessing(Component):
     # Run by runtime
     def InitialiseEffects(self, scene: Scene):
         # Create a quad
-        renderTexObj = Object()
+        renderTexObj = Object("renderTexture")
         renderTexObjInst = scene.Instantiate(renderTexObj) 
         renderTex = PRIMITIVE.QUAD()
         #renderTex.mesh[0].SetMaterial(Material(effect.shader))

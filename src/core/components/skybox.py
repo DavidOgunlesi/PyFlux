@@ -8,6 +8,7 @@ import glm
 
 class Skybox(Component):
     def __init__(self, resourcepath, faces):
+        Component.__init__(self)
         self.resourcepath = resourcepath
         self.faces = faces
         self.material = None
