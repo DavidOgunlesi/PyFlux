@@ -23,6 +23,7 @@ from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
 from core.components.postprocessing import PostProcessing
 from core.component import Component
+from core.components.terrain import Terrain
 import math
 renderer:Runtime = Runtime()
 
@@ -103,6 +104,10 @@ def ConstructScene():
     o.transform.position = glm.vec3(3,7,2)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(0,4,1)
+    
+    modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
+    size = 20*20
+    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
 
     testObj = Object("cube3")
     meshRenderer = PRIMITIVE.CUBE()
@@ -129,14 +134,18 @@ def ConstructScene():
     # size = 20*20
     # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     
-    planeObj = Object("plane")
-    meshRenderer = PRIMITIVE.PLANE()
-    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
-    planeObj.AddComponent(meshRenderer)
-    o = scene.Instantiate(planeObj)
+    # planeObj = Object("plane")
+    # meshRenderer = PRIMITIVE.PLANE()
+    # meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
+    # planeObj.AddComponent(meshRenderer)
+    # o = scene.Instantiate(planeObj)
     
-    o.transform.position = glm.vec3(0,-1,0)
-    o.transform.scale = glm.vec3(21,20,20)
+    # o.transform.position = glm.vec3(0,-1,0)
+    # o.transform.scale = glm.vec3(21,20,20)
+    
+    terrainObj = Object("terrain")
+    terrainObj.AddComponent(Terrain())
+    scene.Instantiate(terrainObj)
     
     return scene
 

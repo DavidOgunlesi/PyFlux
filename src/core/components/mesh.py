@@ -29,6 +29,10 @@ class Mesh(Component):
         BOTH = 2,
         NONE = 3
     
+    class DrawMode:
+        TRIANGLES = gl.GL_TRIANGLES
+        PATCHES = gl.GL_PATCHES
+    
     def __init__(self, type: int, **kwargs):
         Component.__init__(self)
         print("Mesh init")
@@ -45,6 +49,11 @@ class Mesh(Component):
         self.castShadows = True
         self.renderPass = True # Whether this should be rendered in normal render pass
         self.modelMatrices = []
+        self.drawMode = Mesh.DrawMode.TRIANGLES
+        if "calculateNormals" in kwargs:
+            self.calculateNormals = kwargs["calculateNormals"]
+        else:
+            self.calculateNormals = True
         if type == 0:
             self.EasyConstructMesh(kwargs)
         else:
@@ -86,6 +95,9 @@ class Mesh(Component):
     def Update(self):
         pass
     
+    def SetDrawMode(self, mode: Mesh.DrawMode):
+        self.drawMode = mode
+    
     def SetCullMode(self, cullMode:CULLMODE):
         if cullMode == self.CULLMODE.FRONT:
             self.cullMode = gl.GL_FRONT
@@ -116,6 +128,10 @@ class Mesh(Component):
     
     def GenerateVertexAttribDataCollectionOLD(self, vertices, triangles, colors, uvs, normals) :
         vertexData = []
+        if normals == None:
+            # populate normals with 0s
+            normals = [[0,0,0]]*len(vertices)
+            
         for idx, vert_index in enumerate(triangles):
             data = np.concatenate((vertices[vert_index], [1,1,1] ,uvs[idx], normals[idx]), axis=0)
             vertexData.append(data)
@@ -144,6 +160,8 @@ class Mesh(Component):
         Calculate normals automatically from triangles an vertices. 
         Not recommended for complex meshes!
         """
+        if self.calculateNormals == False:
+            return None
         normals = []
         # loop through all faces
         triIdx = 0
@@ -341,7 +359,7 @@ class Mesh(Component):
         # Actually draw the stuff!
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
         #gl.glPointSize(10);   
-        gl.glDrawElementsInstanced(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None,  len(self.modelMatrices))
+        gl.glDrawElementsInstanced(self.drawMode, len(self.faceData), gl.GL_UNSIGNED_INT, None,  len(self.modelMatrices))
         
         if shadowMap != 0:
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)

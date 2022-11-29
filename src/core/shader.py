@@ -3,16 +3,42 @@ from core.util import GetRootPathDir
 import glm
 class Shader:
     
-    def __init__(self, vertexShaderName: str, fragmentShaderName: str, shaderRootPath = "resources/shaders/"):
+    def __init__(
+        self, 
+        vertexShaderName: str, 
+        fragmentShaderName: str, 
+        geomShaderName: str = "", 
+        tessControlShaderName:str = "", 
+        tessEvalShaderName:str = "", 
+        shaderRootPath = "resources/shaders/"
+        ):
         # Get shader code
         with open(f'{GetRootPathDir()}/{shaderRootPath}{fragmentShaderName}.glsl', "r") as file:
             f_shader:str = file.read()
         with open(f'{GetRootPathDir()}/{shaderRootPath}{vertexShaderName}.glsl', "r") as file:
             v_shader:str = file.read()
+            
+        if geomShaderName != "":
+            with open(f'{GetRootPathDir()}/{shaderRootPath}{geomShaderName}.glsl', "r") as file:
+                g_shader:str = file.read()
+                
+        if tessControlShaderName != "":
+            with open(f'{GetRootPathDir()}/{shaderRootPath}{tessControlShaderName}.glsl', "r") as file:
+                t_c_shader:str = file.read()
+        
+        if tessEvalShaderName != "":
+            with open(f'{GetRootPathDir()}/{shaderRootPath}{tessEvalShaderName}.glsl', "r") as file:
+                t_e_shader:str = file.read()
         
         # Create object 
         vertexShaderID = gl.glCreateShader(gl.GL_VERTEX_SHADER)
         fragShaderID = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+        if geomShaderName != "":
+            geometryShaderID = gl.glCreateShader(gl.GL_GEOMETRY_SHADER)
+        if tessControlShaderName != "":
+            tessControlShaderID = gl.glCreateShader(gl.GL_TESS_CONTROL_SHADER)
+        if tessEvalShaderName != "":
+            tessEvalShaderID = gl.glCreateShader(gl.GL_TESS_EVALUATION_SHADER)
         
         # Compile vertex shader
         gl.glShaderSource(vertexShaderID, v_shader)
@@ -30,6 +56,33 @@ class Shader:
             msg = gl.glGetShaderInfoLog(fragShaderID)
             print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n", msg)
             
+        # Compile goemerty shader
+        if geomShaderName != "":
+            gl.glShaderSource(geometryShaderID, g_shader)
+            gl.glCompileShader(geometryShaderID)
+            # print compile errors if any
+            if not gl.glGetShaderiv(geometryShaderID, gl.GL_COMPILE_STATUS):
+                msg = gl.glGetShaderInfoLog(geometryShaderID)
+                print("ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n", msg)
+                
+        # Compile tesselation control shader
+        if tessControlShaderName != "":
+            gl.glShaderSource(tessControlShaderID, t_c_shader)
+            gl.glCompileShader(tessControlShaderID)
+            # print compile errors if any
+            if not gl.glGetShaderiv(tessControlShaderID, gl.GL_COMPILE_STATUS):
+                msg = gl.glGetShaderInfoLog(tessControlShaderID)
+                print("ERROR::SHADER::TESS_CONTROL::COMPILATION_FAILED\n", msg)
+            
+         # Compile tesselation evaluation shader    
+        if tessEvalShaderName != "":
+            gl.glShaderSource(tessEvalShaderID, t_e_shader)
+            gl.glCompileShader(tessEvalShaderID)
+            # print compile errors if any
+            if not gl.glGetShaderiv(tessEvalShaderID, gl.GL_COMPILE_STATUS):
+                msg = gl.glGetShaderInfoLog(tessEvalShaderID)
+                print("ERROR::SHADER::TESS_EVAL::COMPILATION_FAILED\n", msg)
+                
         # bind shaders to program object
         
         # Create program object
@@ -38,13 +91,25 @@ class Shader:
         # attach shaders to program
         gl.glAttachShader(shaderProgramID, vertexShaderID)
         gl.glAttachShader(shaderProgramID, fragShaderID)
-        
+        if geomShaderName != "":
+            gl.glAttachShader(shaderProgramID, geometryShaderID)
+        if tessControlShaderName != "":
+            gl.glAttachShader(shaderProgramID, tessControlShaderID)   
+        if tessEvalShaderName != "":
+            gl.glAttachShader(shaderProgramID, tessEvalShaderID)   
+            
         # links and package everthing into the program (ins and outs of shaders matched)
         gl.glLinkProgram(shaderProgramID)
         
         # Delete shaders since we have already linked them to the program
         gl.glDeleteShader(vertexShaderID)
         gl.glDeleteShader(fragShaderID) 
+        if geomShaderName != "":
+            gl.glDeleteShader(geometryShaderID) 
+        if tessControlShaderName != "":
+            gl.glDeleteShader(tessControlShaderID)
+        if tessEvalShaderName != "":
+            gl.glDeleteShader(tessEvalShaderID)
         
         self.shaderProgramID = shaderProgramID
         

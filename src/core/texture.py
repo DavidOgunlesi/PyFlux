@@ -66,6 +66,16 @@ class Texture:
         
     def free(self):
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+   
+class GeneratedTexture(Texture):
+    
+    def __init__(self, width:int, height:int, pixelArray:pg.PixelArray):
+        # Create image form x and y values
+        self.width, self.height = width, height
+        self.rawTexData = pg.image.tostring(pixelArray.surface, "RGBA")
+        
+        self.CreateTexture()
+
         
 class CubeMap(Texture):
     def __init__(self, path:str, faces:List[str], textureRootPath:str="resources/"):

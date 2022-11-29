@@ -173,3 +173,31 @@ class PRIMITIVE:
         mc = MeshCollection()
         mc.addMesh(Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs))
         return ModelRenderer(mc)
+    
+    @classmethod
+    def PLANE_PATCHES(cls):
+        vertices=[
+            #vPos  color  uv
+            [-1,0,-1],
+            [1,0,-1],
+            [-1,0,1],
+            [1,0,1],
+            ]
+        colors=[
+            #vPos
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            ]
+        uvs=[
+            [0,1],[1,1],[0,0],[1,0]
+            ]
+        triangles = [
+            0,1,2,3
+        ]
+        #return Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        mc = MeshCollection()
+        m = Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs, calculateNormals=False)
+        mc.addMesh(m)
+        return ModelRenderer(mc)

@@ -10,19 +10,23 @@ out vec3 ourColor;
 out vec2 TexCoord;
 out vec3 Normal;
 out vec4 FragPosLightSpace;
-
+out mat4 MVP;
 
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
+uniform sampler2D heightMap;
 
 void main()
 {
     // transpose bc numpy is column major and opengl is row major AHHH this was annoying to figure out
     mat4 model = transpose(modelInstanceMatrix);
-    //mat4 model = modelInstanceMatrix;
-    gl_Position = projection * view * /*model*/model * vec4(aPos, 1.0);
-    FragPos = vec3(model * vec4(aPos, 1.0));
+    MVP = projection * view * transpose(modelInstanceMatrix);
+    float y = texture(heightMap, aTexCoord).r + texture(heightMap, aTexCoord).g + texture(heightMap, aTexCoord).b;
+    vec4 pos = vec4(aPos.x, y, aPos.z, 1.0);
+
+    gl_Position = projection * view * model * pos;
+    FragPos = vec3(model * pos);
     ourColor = aColor;
     TexCoord = aTexCoord;
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
