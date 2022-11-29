@@ -117,17 +117,17 @@ def ConstructScene():
     obj = scene.Instantiate(testObj)
     obj.transform.position = glm.vec3(1,0,0)
     
-    bagObjPrefab = Object("bag")
-    modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
-    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
-    bagObjPrefab.AddComponent(modelRenderer)
-    bagObj = scene.Instantiate(bagObjPrefab)
-    bagObj.transform.position = glm.vec3(0,1,0)
-    bagObj.transform.scale = glm.vec3(.01,.01,.01)
-    bagObj.transform.rotation = glm.vec3(24,23,1)
-    modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
-    size = 20*20
-    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
+    # bagObjPrefab = Object("bag")
+    # modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
+    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    # bagObjPrefab.AddComponent(modelRenderer)
+    # bagObj = scene.Instantiate(bagObjPrefab)
+    # bagObj.transform.position = glm.vec3(0,1,0)
+    # bagObj.transform.scale = glm.vec3(.01,.01,.01)
+    # bagObj.transform.rotation = glm.vec3(24,23,1)
+    # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
+    # size = 20*20
+    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     
     planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()

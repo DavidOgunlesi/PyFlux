@@ -84,7 +84,7 @@ class Mesh(Component):
         return super().Start()
     
     def Update(self):
-        GLOBAL.CURRENTRENDERCONTEXT.QueueRender(self)
+        pass
     
     def SetCullMode(self, cullMode:CULLMODE):
         if cullMode == self.CULLMODE.FRONT:

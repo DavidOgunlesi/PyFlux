@@ -28,7 +28,6 @@ class Runtime:
         self.preoccpass = 0
         self.scene = None
         self.renderTexMesh: Mesh = None
-        self.renderQueue: List[Mesh] = []
         GLOBAL.CURRENTRENDERCONTEXT = self
         self.SHADOW_WIDTH = 4096
         self.SHADOW_HEIGHT = 4096 #1024
@@ -56,8 +55,6 @@ class Runtime:
     def QuitEvent(self, _, __):
         self.active = False
         
-    def test(self):
-        print("SADASD")
     def Run(self):
         if self.scene == None:
             print("Error initialisinf runtime. Scene cannot be null.")
@@ -74,11 +71,9 @@ class Runtime:
             if input.GetKeyDown(pg.K_ESCAPE):
                 self.active = False
                 
-             
+            self.scene.UpdateScene() 
             # self.OcculusionPrePass() TODO: Fix this
-            self.scene.UpdateScene()
             self.RenderShadowMap()
-            self.scene.UpdateScene()
             # Render QUAD
             if self.postProcessor != None and len(self.postProcessor.stack) != 0:
                 self.RenderSceneWithPostProcessing()
@@ -93,14 +88,14 @@ class Runtime:
             # Flip frame buffers since we are using double buffering
             pg.display.flip()
             
-
-    def QueueRender(self, mesh: Mesh):
-        self.renderQueue.append(mesh)
     
     def RenderData(self, shadowPass):
+        # Get all meshes in scene
+        renderQueue: List[Mesh] = self.scene.GetMeshes()
+        
         # sort jobs by distance to camera so that transparent stuff works
-        self.renderQueue.sort(key=lambda m: m.GetDistanceToCamera(), reverse=True)
-        for job in self.renderQueue:
+        renderQueue.sort(key=lambda m: m.GetDistanceToCamera(), reverse=True)
+        for job in renderQueue:
             if not shadowPass and job.renderPass:
                 job.Render(shadowMap = self.depthMap)
             elif job.castShadows and job.renderPass:    
@@ -108,7 +103,7 @@ class Runtime:
                 job.Render()
                 #job.FlipCullMode()
                 
-        self.renderQueue.clear()
+        renderQueue.clear()
         
     def GetLightSpaceTransform(self):
         near_plane = 0

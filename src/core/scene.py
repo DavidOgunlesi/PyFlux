@@ -5,6 +5,8 @@ from core.components.camera import Camera
 from core.collections.light import LightCollection
 from core.components.light import Light, DirectionalLight
 from core.components.skybox import Skybox
+from core.components.mesh import Mesh
+from core.components.modelRenderer import ModelRenderer
 class Scene:
     
     def __init__(self):
@@ -40,6 +42,17 @@ class Scene:
             return
         for obj in self.__objects:
             obj.UpdateComponents()
+    
+    def GetMeshes(self):
+        meshes = []
+        for obj in self.__objects:
+            mesh = obj.FindComponentOfType(Mesh)
+            if mesh != None:
+                meshes.append(mesh)
+            modelRenderer: ModelRenderer = obj.FindComponentOfType(ModelRenderer)
+            if modelRenderer != None:
+                meshes.extend(modelRenderer.meshCollection.meshes)
+        return meshes
     
     def SetMainCamera(self, camera:Camera):
         self.mainCamera = camera
