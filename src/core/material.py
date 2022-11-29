@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Type
+from typing import TYPE_CHECKING, List, Type, Tuple
 import OpenGL.GL as gl
 from core.shader import Shader
 from core.texture import Texture
@@ -15,6 +15,7 @@ class Material:
         self.diffuseTex = diffuseTex or Texture("textures/noTex.png")
         self.specularTex = specularTex or Texture("textures/noTex.png")
         self.roughness = 50
+        self.textureGroups: List[Tuple[Texture, int]] = []
     
     def SetProperties(self, lightCollection: LightCollection):
         self.shader.setInt("material.diffuse", 0)
@@ -52,7 +53,15 @@ class Material:
                 self.shader.setFloat(f"pointLights[{idx}].linear", l.linear)
                 self.shader.setFloat(f"pointLights[{idx}].quadratic", l.quadratic)
                 
-    
+    def SetTexture(self, tex: Texture, textureGroup: int):
+        if textureGroup == 0:
+            self.diffuseTex = tex
+        elif textureGroup == 1:
+            self.specularTex = tex
+        else:
+            self.textureGroups.append((tex, textureGroup))
+
+
     def use(self):
         if self.diffuseTex:
             gl.glActiveTexture(gl.GL_TEXTURE0)
@@ -61,6 +70,11 @@ class Material:
         if self.specularTex:
             gl.glActiveTexture(gl.GL_TEXTURE1)
             self.specularTex.use()
+        
+        for tex, textureGroup in self.textureGroups:
+            gl.glActiveTexture(textureGroup)
+            tex.use()
+
     
 
         
@@ -73,5 +87,9 @@ class Material:
         if self.specularTex:
             gl.glActiveTexture(gl.GL_TEXTURE1)
             self.specularTex.free()
+
+        for tex, textureGroup in self.textureGroups:
+            gl.glActiveTexture(textureGroup)
+            tex.free()
         
     

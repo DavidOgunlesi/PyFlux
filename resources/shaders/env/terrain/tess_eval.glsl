@@ -9,20 +9,21 @@ in vec3 Normal_[];
 in vec4 FragPosLightSpace_[];
 in mat4 model_[];
 in float Perlin_[];
-
+in float Rotation_[];
 out vec3 FragPos;
 out vec3 ourColor;
 out vec2 TexCoord;
 out vec3 Normal;
 out vec4 FragPosLightSpace;
-
+out float Rotation;
 // send to Fragment Shader for coloring
 out float Height;
 
-uniform sampler2D heightMap;
+layout (binding = 3) uniform sampler2D heightMap;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpaceMatrix;
 
 void main(){
     // get patch coordinate
@@ -41,6 +42,8 @@ void main(){
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
+    TexCoord = texCoord;
+    
     // bilinearly interpolate perlin noises across patch
     // retrieve control point texture coordinates
     float pn00 = Perlin_[0];
@@ -50,6 +53,16 @@ void main(){
     float pn0 = (pn01 - pn00) * u + pn00;
     float pn1 = (pn11 - pn10) * u + pn10;
     float finalPerlin = (pn1 - pn0) * v + pn0;
+
+    // bilinearly interpolate rotation noises across patch
+    // retrieve control point texture coordinates
+    float r00 = Rotation_[0];
+    float r01 = Rotation_[1];
+    float r10 = Rotation_[2];
+    float r11 = Rotation_[3];
+    float r0 = (r01 - r00) * u + r00;
+    float r1 = (r11 - r10) * u + r10;
+    Rotation = Rotation_[0];
 
     // lookup texel at patch coordinate for height and scale + shift as desired
     Height = texture(heightMap, texCoord).y * 64.0 - 16.0;
@@ -73,7 +86,9 @@ void main(){
 
     // displace point along normal
     p += normal * Height;
-
+    FragPos = vec3(model * p);
+    Normal = vec3(normal);
+    FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
     // ----------------------------------------------------------------------
     // output patch point position in clip space
     gl_Position = projection * view * model * p;

@@ -15,6 +15,7 @@ import pygame as pg
 from perlin_noise import PerlinNoise
 from core.collections.mesh import MeshCollection
 from core.components.modelRenderer import ModelRenderer
+import core.input as input
 
 if TYPE_CHECKING:
     from core.scene import Scene
@@ -38,7 +39,8 @@ class TerrainMesh(Component):
         # pg.image.save(pixelArray.surface,'temp.jpeg')
         
         #heightmap = GeneratedTexture(width,height,pixelArray)
-        heightmap = Texture('textures/temp2.png', colorMode="RGB")
+        heightmap = Texture('textures/temp2.png', colorMode="RGB",)
+        grass = Texture('textures/grass_seamless_texture_1392.jpg', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
         # Create Plane
@@ -46,7 +48,11 @@ class TerrainMesh(Component):
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
         meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
-        meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex = heightmap, specularTex=heightmap))
+        mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=grass, specularTex=grass)
+
+        mat.SetTexture(heightmap, gl.GL_TEXTURE3)
+
+        meshRenderer.mesh[0].SetMaterial(mat)
         meshRenderer.mesh[0].SetUniformPasser(self.PassUniforms)
         planeObj.AddComponent(meshRenderer)
         self.plane = self.scene.Instantiate(planeObj)
@@ -56,7 +62,8 @@ class TerrainMesh(Component):
         self.plane.transform.position = self.transform.position
         self.plane.transform.rotation = self.transform.rotation
         self.plane.transform.scale = self.transform.scale
-    
+        if input.GetKeyPressed(pg.K_UP):
+            self.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
 
     def GenerateMesh(self, width, height, resolution):
         rez = resolution

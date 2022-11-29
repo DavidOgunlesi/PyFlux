@@ -14,7 +14,8 @@ out vec4 FragPosLightSpace_[];
 
 in float Perlin[];
 out float Perlin_[];
-
+in float Rotation[];
+out float Rotation_[];
 uniform mat4 model;
 uniform mat4 view;
 
@@ -25,13 +26,18 @@ uniform int MAX_TESS_LEVEL;// = 64;
 uniform float MIN_DISTANCE;// = 0;
 uniform float MAX_DISTANCE;// = 80;
 
+
 void main()
 {
     // ----------------------------------------------------------------------
     // pass attributes through
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     TexCoord_[gl_InvocationID] = TexCoord[gl_InvocationID];
-
+    FragPos_[gl_InvocationID] = FragPos[gl_InvocationID];
+    Normal_[gl_InvocationID] = Normal[gl_InvocationID];
+    FragPosLightSpace_[gl_InvocationID] = FragPosLightSpace[gl_InvocationID];
+    Perlin_[gl_InvocationID] = Perlin[gl_InvocationID];
+    Rotation_[gl_InvocationID] = Rotation[gl_InvocationID];
     // ----------------------------------------------------------------------
     // invocation zero controls tessellation levels for the entire patch
     if (gl_InvocationID == 0)
@@ -70,3 +76,4 @@ void main()
         gl_TessLevelInner[1] = max(tessLevel0, tessLevel2);
     }
 }
+

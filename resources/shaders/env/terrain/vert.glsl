@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec2 aTexCoord;
@@ -11,17 +11,25 @@ out vec2 TexCoord;
 out vec3 Normal;
 out vec4 FragPosLightSpace;
 out float Perlin;
-
+out float Rotation;
 
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
-uniform sampler2D heightMap;
 
 
 float snoise(vec2 v);
 vec3 permute(vec3 x);
 #define PI 3.14159265358979323846
+
+float random(vec2 p)
+{
+    vec2 K1 = vec2(
+        23.14069263277926, // e^pi (Gelfond's constant)
+        2.665144142690225 // 2^sqrt(2) (Gelfond–Schneider constant)
+    );
+    return fract( cos( dot(p,K1) ) * 12345.6789 );
+}
 
 void main()
 {
@@ -39,7 +47,7 @@ void main()
     //to do generate on CPU
     mat3 NormalMat = mat3(transpose(inverse(modelMtx)));
     Normal = NormalMat * aNorm;
-
+    Rotation = random(FragPos.xy)*360;
 
     Perlin = snoise(pos.xz);
 }

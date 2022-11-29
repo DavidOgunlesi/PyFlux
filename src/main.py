@@ -133,14 +133,14 @@ def ConstructScene():
     # size = 20*20
     # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     
-    # planeObj = Object("plane")
-    # meshRenderer = PRIMITIVE.PLANE()
-    # meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
-    # planeObj.AddComponent(meshRenderer)
-    # o = scene.Instantiate(planeObj)
+    planeObj = Object("plane")
+    meshRenderer = PRIMITIVE.PLANE()
+    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
+    planeObj.AddComponent(meshRenderer)
+    o = scene.Instantiate(planeObj)
     
-    # o.transform.position = glm.vec3(0,-1,0)
-    # o.transform.scale = glm.vec3(21,20,20)
+    o.transform.position = glm.vec3(0,-1,0)
+    o.transform.scale = glm.vec3(21,20,20)
     
     terrainObj = Object("terrain")
     terrainObj.AddComponent(TerrainMesh())

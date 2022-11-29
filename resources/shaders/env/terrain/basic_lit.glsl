@@ -7,7 +7,7 @@ in vec3 Normal;
 in vec4 FragPosLightSpace;
 
 in float Height;
-
+in float Rotation;
 uniform vec3 cameraPos;
 
 struct DirLight {
@@ -89,6 +89,15 @@ vec4 LinearGradient(float value, vec4[4] colors, float[4] locations) {
     return vec4(0.0, 0.0, 0.0, 1.0);
 }
 
+vec2 rotateUV(vec2 uv, float rotation)
+{
+    float mid = 0.5;
+    return vec2(
+        cos(rotation) * (uv.x - mid) + sin(rotation) * (uv.y - mid) + mid,
+        cos(rotation) * (uv.y - mid) - sin(rotation) * (uv.x - mid) + mid
+    );
+}
+
 void main()
 {
     vec3 norm = normalize(Normal);
@@ -130,9 +139,19 @@ void main()
     
     // Colors from blue to yellow to green to brown to gray to white
     vec4 colors[4] = vec4[4](vec4(0.0, 0.0, 1.0, 1.0), vec4(1.0, 1.0, 0.0, 1.0), vec4(0.0, 1.0, 0.0, 1.0), vec4(0.5, 0.5, 0.5, 1.0));
+    //vec2 normTexCoord = 400 * TexCoord;// 400  rotateUV(TexCoord, Rotation);
+    vec2 Resolution = vec2(400, 400);
+    // convert degrees to radians
+    float angle = (Rotation * 3.14159265) / 180.0;
+    float sin_factor = sin(angle);
+    float cos_factor = cos(angle);
+    vec2 normTexCoord = 400 * TexCoord * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
+    vec4 tiledVal = texture(material.diffuse, normTexCoord);
+    vec4 colors2[4] = vec4[4](texture(material.diffuse, normTexCoord), tiledVal, tiledVal, tiledVal);
     float locations[4] = float[4](0.0, 0.25, 0.5, 1.0);
     vec4 color = LinearGradient(h, colors, locations);
-    gl_FragColor = vec4(result, tex.a) * color;
+    vec4 color2 = LinearGradient(h, colors2, locations);
+    gl_FragColor = color * color2;
 } 
 
 
