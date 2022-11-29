@@ -15,6 +15,7 @@ class ModelRenderer(Component):
     def __init__(self, meshes: MeshCollection):
         Component.__init__(self)
         self.meshCollection: MeshCollection = meshes
+        self.modelMatrices: List[glm.mat4] = []
        
     def Init(self, parent: Object, scene: Scene, transform: Transform):
         for mesh in self.meshCollection.meshes:
@@ -24,6 +25,7 @@ class ModelRenderer(Component):
     def Awake(self):
         for mesh in self.meshCollection.meshes:
             mesh.Awake()
+            mesh.modelMatrices = self.modelMatrices
         self.NormalizeMeshCentre()
         
     def Start(self):

@@ -28,9 +28,9 @@ renderer:Runtime = Runtime()
 
 def GetPoseMatrices(i: int, c:Component, size: int):
     # Create vectors in a grid based on i index, with spacing
-    spacing = 1
+    spacing = 3
     vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
-    poseMtx = c.transform.GetPoseMatrix(translation=vec, rotation=glm.vec3(0,0,0), scale=glm.vec3(1,1,1))
+    poseMtx = c.transform.GetPoseMatrix(translation=vec)
     return poseMtx
 
 def ConstructScene():
@@ -86,14 +86,11 @@ def ConstructScene():
     # spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
     
     testObj = Object("cube")
-    meshRenderer = PRIMITIVE.QUAD()
+    meshRenderer = PRIMITIVE.CUBE()
     testObj.AddComponent(meshRenderer)
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
     meshRenderer.mesh[0].IgnoreCameraDistance(False)
     o =scene.Instantiate(testObj)
-    modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
-    size = 20*20
-    modelRenderer.mesh[0].modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
     
@@ -120,20 +117,24 @@ def ConstructScene():
     obj = scene.Instantiate(testObj)
     obj.transform.position = glm.vec3(1,0,0)
     
-    # bagObjPrefab = Object()
-    # modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
-    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
-    # bagObjPrefab.AddComponent(modelRenderer)
-    # bagObj = scene.Instantiate(bagObjPrefab)
-    # bagObj.transform.position = glm.vec3(0,1,0)
-    # bagObj.transform.scale = glm.vec3(.01,.01,.01)
-    # bagObj.transform.rotation = glm.vec3(24,23,1)
+    bagObjPrefab = Object("bag")
+    modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
+    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    bagObjPrefab.AddComponent(modelRenderer)
+    bagObj = scene.Instantiate(bagObjPrefab)
+    bagObj.transform.position = glm.vec3(0,1,0)
+    bagObj.transform.scale = glm.vec3(.01,.01,.01)
+    bagObj.transform.rotation = glm.vec3(24,23,1)
+    modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
+    size = 20*20
+    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     
     planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()
     meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
     planeObj.AddComponent(meshRenderer)
     o = scene.Instantiate(planeObj)
+    
     o.transform.position = glm.vec3(0,-1,0)
     o.transform.scale = glm.vec3(21,20,20)
     
