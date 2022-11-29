@@ -1,9 +1,10 @@
-#version 330
+#version 440
 
 in vec3 TexCoord;
 uniform samplerCube skybox;
+out vec4 myOutputColor;
 
 void main()
 {
-    gl_FragColor = texture(skybox, TexCoord);
+    myOutputColor = texture(skybox, TexCoord);
 } 

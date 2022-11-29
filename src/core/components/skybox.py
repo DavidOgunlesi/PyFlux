@@ -15,7 +15,6 @@ class Skybox(Component):
     
     def Start(self):
         from core.material import Material
-        from core.texture import Texture
         
         modelRenderer = PRIMITIVE.UNITCUBE()
         if not self.GetComponent(ModelRenderer):
@@ -31,7 +30,7 @@ class Skybox(Component):
         modelRenderer.mesh[0].OverrideViewMtx()
         modelRenderer.mesh[0].castShadows = False
         #modelRenderer.mesh[0].IgnoreCameraDistance(True)
+        
     def Update(self):
-        pass
         modelRenderer:ModelRenderer = self.GetComponent(ModelRenderer)
         modelRenderer.mesh[0].viewMtxOverrideValue = glm.mat4(glm.mat3(self.scene.mainCamera.viewMatrix))

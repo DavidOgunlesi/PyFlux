@@ -17,7 +17,6 @@ from core.texture import Texture, CubeMap
 from core.components.camera import Camera
 from core.components.sprite import SpriteRenderer
 from core.primitives import PRIMITIVE
-import glm
 from core.components.light import DirectionalLight, PointLight,SpotLight
 from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
@@ -62,17 +61,17 @@ def ConstructScene():
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)
     
-    # render tex
-    ro = Object("render tex")
-    renderTex = PRIMITIVE.QUAD()
-    renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
-    renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    renderTex.mesh[0].castShadows = False
-    renderTex.mesh[0].renderPass = False
-    ro.AddComponent(renderTex)
+    # # render tex
+    # ro = Object("render tex")
+    # renderTex = PRIMITIVE.QUAD()
+    # renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
+    # renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
+    # renderTex.mesh[0].castShadows = False
+    # renderTex.mesh[0].renderPass = False
+    # ro.AddComponent(renderTex)
     
-    o = scene.Instantiate(ro)
-    renderer.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
+    # o = scene.Instantiate(ro)
+    # renderer.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
     
     light = Object("light")
     l = scene.Instantiate(light)

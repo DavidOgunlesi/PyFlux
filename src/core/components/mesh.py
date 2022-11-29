@@ -364,6 +364,8 @@ class Mesh(Component):
         if shadowMap != 0:
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
             
+        gl.glBindVertexArray(0)
+
         #self.scene.skybox.material.free()
         shader.free()
         mat.free()
