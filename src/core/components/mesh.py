@@ -35,7 +35,6 @@ class Mesh(Component):
     
     def __init__(self, type: int, **kwargs):
         Component.__init__(self)
-        print("Mesh init")
         self.vertices = kwargs["vertices"]
         self.VAO = None
         self.material = None
@@ -50,6 +49,7 @@ class Mesh(Component):
         self.renderPass = True # Whether this should be rendered in normal render pass
         self.modelMatrices = []
         self.drawMode = Mesh.DrawMode.TRIANGLES
+        self.__passUniforms: Callable = None
         if "calculateNormals" in kwargs:
             self.calculateNormals = kwargs["calculateNormals"]
         else:
@@ -64,8 +64,13 @@ class Mesh(Component):
         triangles = kwargs["triangles"]
         colors = kwargs["colors"]
         uvs = kwargs["uvs"]
+        normals = None
+        if "normals" in kwargs:
+            normals = kwargs["normals"]
         #vertices = self.NormalizeMeshCentre(vertices)
-        normals = self.CalculateNormals(vertices, triangles)
+        if normals == None:
+            normals = self.CalculateNormals(vertices, triangles)
+            
         self.vertexData = self.GenerateVertexAttribDataCollectionOLD(vertices, triangles, colors, uvs, normals)
         self.faceData = list(range(0, len(triangles)))
         #self.VAO = self.GenerateVAO()
@@ -143,16 +148,6 @@ class Mesh(Component):
         for i in range(0, len(vertices)):
             data = np.concatenate((vertices[i][0:3], [1,1,1] ,uvs[i][0:2], normals[i][0:3]), axis=0)
             vertexData.append(data)
-        return vertexData
-    
-
-        vertexData = []
-        #print(triangles[0])
-        triangles = np.array(triangles, dtype=np.int32)
-        for face in triangles:
-            for vert_index in face:
-                data = np.concatenate((vertices[vert_index], [1,1,1] ,uvs[vert_index], normals[vert_index]), axis=0)
-                vertexData.append(data.tolist())
         return vertexData
     
     def CalculateNormals(self, vertices, triangles):
@@ -304,6 +299,9 @@ class Mesh(Component):
         else:
             return const.MAX_INT
     
+    def SetUniformPasser(self, uniformPasser:Callable):
+        self.__passUniforms = uniformPasser
+
     def RenderInstanced(self, shadowMap=0):
         
         # Update model matrix if we are only rendering one instance
@@ -340,6 +338,11 @@ class Mesh(Component):
             gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
         
         self.scene.skybox.material.use()
+        
+        if self.__passUniforms != None:
+            self.__passUniforms(shader)
+
+        shader.setMat4("model", self.transform.GetPoseMatrix())
         shader.setMat4("view", viewMtx)
         shader.setMat4("projection", projection)
         shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())

@@ -14,11 +14,12 @@ class Material:
         self.shader = shader
         self.diffuseTex = diffuseTex or Texture("textures/noTex.png")
         self.specularTex = specularTex or Texture("textures/noTex.png")
+        self.roughness = 50
     
     def SetProperties(self, lightCollection: LightCollection):
         self.shader.setInt("material.diffuse", 0)
         self.shader.setInt("material.specular", 1)
-        self.shader.setFloat("material.roughness", 5)
+        self.shader.setFloat("material.roughness", self.roughness)
         
         for idx, light in enumerate(lightCollection.lights):
             if type(light) == SpotLight:

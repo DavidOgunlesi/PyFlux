@@ -5,10 +5,11 @@ import os
 from typing import List
         
 class Texture:
-    def __init__(self, path:str, textureRootPath:str="resources/", rootPath:str=GetRootPathDir()):
+    def __init__(self, path:str, textureRootPath:str="resources/", rootPath:str=GetRootPathDir(), colorMode = "RGBA"):
         self.width, self.height = 0, 0
         self.rawTexData = None
         self.textureID = 0
+        self.colorMode = colorMode
         path = self.ValidatePath(f'{rootPath}/{textureRootPath}', path)
                 
         try:
@@ -17,7 +18,7 @@ class Texture:
             image = pg.image.load(texpath)
             image = pg.transform.flip(image, False, False)
             self.width, self.height = image.get_rect().size
-            self.rawTexData = pg.image.tostring(image, "RGBA")
+            self.rawTexData = pg.image.tostring(image, colorMode)
         except:
             print(f"ERROR: Could not load texture at {path}")
             return
@@ -48,6 +49,7 @@ class Texture:
         self.textureID = gl.glGenTextures(1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.textureID)
         
+
         # set the texture wrapping/filtering options
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
@@ -56,7 +58,11 @@ class Texture:
         gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)	
         gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameteri( gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.width, self.height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, self.rawTexData)
+        if self.colorMode == "RGBA":
+            gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.width, self.height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, self.rawTexData)
+        else:
+            gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, self.width, self.height, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, self.rawTexData)
+
         gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
         
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)

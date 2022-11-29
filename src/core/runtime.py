@@ -32,6 +32,7 @@ class Runtime:
         self.SHADOW_WIDTH = 4096
         self.SHADOW_HEIGHT = 4096 #1024
         self.postProcessor: PostProcessing = None
+        self.wireframe = False
         
     
     def InitRuntime(self):
@@ -68,9 +69,18 @@ class Runtime:
             
             eventsystem.pollEvent(pg.QUIT, self.QuitEvent)
             
-            if input.GetKeyDown(pg.K_ESCAPE):
-                self.active = False
-            
+            # if input.GetKeyDown(pg.K_ESCAPE):
+            #     self.active = False
+
+            if input.GetKeyDown(pg.K_F1):
+                print("Toggling Wireframe")
+                if  self.wireframe:
+                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
+                    self.wireframe = False
+                else:
+                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+                    self.wireframe = True
+
             self.scene.UpdateScene() 
             # self.OcculusionPrePass() TODO: Fix this
             self.RenderShadowMap()

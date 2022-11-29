@@ -191,13 +191,19 @@ class PRIMITIVE:
             [1,1,1],
             ]
         uvs=[
-            [0,1],[1,1],[0,0],[1,0]
+            [1,1],[1,0],[0,0],[0,1]
             ]
         triangles = [
             0,1,2,3
         ]
+        normals = [
+            [0,1,0],
+            [0,1,0],
+            [0,1,0],
+            [0,1,0],
+        ]
         #return Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
         mc = MeshCollection()
-        m = Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs, calculateNormals=False)
+        m = Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs, normals=normals)
         mc.addMesh(m)
         return ModelRenderer(mc)

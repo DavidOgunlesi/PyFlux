@@ -36,8 +36,8 @@ def ExecuteEvents():
         for idx, item in enumerate(removeIdxs):
             if item != -1:
                 eventQueue.pop(item)
-                eventTypeDict.pop(pollEvent.eventType, None)
                 pollEvent = eventsToRun[idx]
+                
                 pollEvent.onEvent(pollEvent.event, pollEvent.data)
     
     eventTypeDict.clear()

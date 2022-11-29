@@ -13,11 +13,13 @@ import core.gametime as gametime
 import core.globals as GLOBAL
 import pygame as pg
 from perlin_noise import PerlinNoise
+from core.collections.mesh import MeshCollection
+from core.components.modelRenderer import ModelRenderer
 
 if TYPE_CHECKING:
     from core.scene import Scene
 
-class Terrain(Component):
+class TerrainMesh(Component):
  
     def __init__(self):
         Component.__init__(self)
@@ -28,33 +30,75 @@ class Terrain(Component):
     
     def Start(self):
         # Create heightmap texture with perlin
-        width = 512
-        height = 512
-        surface = pg.Surface((width, height))
-        pixelArray = pg.PixelArray(surface)
+        
+        #surface = pg.Surface((width, height))
+        #pixelArray = pg.PixelArray(surface)
         # self.GeneratePerlinNoise(pixelArray, octaves=2, persistence=0.5, lacunarity=2, seed=1)
         # pg.image.save(pixelArray.surface,'temp.jpeg')
         
         #heightmap = GeneratedTexture(width,height,pixelArray)
-        heightmap = Texture('textures/temp.jpeg')
+        heightmap = Texture('textures/temp2.png', colorMode="RGB")
+        width = heightmap.width
+        height = heightmap.height
         # Create Plane
         planeObj = Object("plane")
-        #meshRenderer = PRIMITIVE.PLANE()
-        meshRenderer = PRIMITIVE.PLANE_PATCHES()
+        meshRenderer = self.GenerateMesh(width, height, 20)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
         meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
-        meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "fragment"), diffuseTex = heightmap, specularTex=None))
-        #meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "fragment"), diffuseTex = heightmap, specularTex=None))
+        meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex = heightmap, specularTex=heightmap))
+        meshRenderer.mesh[0].SetUniformPasser(self.PassUniforms)
         planeObj.AddComponent(meshRenderer)
         self.plane = self.scene.Instantiate(planeObj)
-        #self.transform.scale = glm.vec3(1000,1,1000)
+        self.transform.scale = glm.vec3(1,1,1)
 
     def Update(self):
         self.plane.transform.position = self.transform.position
         self.plane.transform.rotation = self.transform.rotation
         self.plane.transform.scale = self.transform.scale
     
+
+    def GenerateMesh(self, width, height, resolution):
+        rez = resolution
+        vertices=[]
+        colors=[]
+        uvs=[]
+        triangles = []
+        normals = []
+        for i in range(rez-1):
+            for j in range(rez-1):
+                vertices.append([-width/2.0 + width*i/rez, 0.0, -height/2.0 + height*j/rez])
+                uvs.append([i / rez, j / rez])# uv
+
+                vertices.append([-width/2.0 + width*(i+1)/rez, 0.0, -height/2.0 + height*j/rez])
+                uvs.append([(i+1) / rez, j / rez])# uv
+
+                vertices.append([-width/2.0 + width*i/rez, 0.0, -height/2.0 + height*(j+1)/rez])
+                uvs.append([i / rez, (j+1) / rez])# uv
+
+                vertices.append([-width/2.0 + width*(i+1)/rez, 0.0, -height/2.0 + height*(j+1)/rez])
+                uvs.append([(i+1) / rez, (j+1) / rez])# uv
+            
+        # Fill colors with white for length of vertices
+        colors = [[1,1,1]] * len(vertices)
+
+        # Fill normals with 0 for length of vertices
+        normals = [[0,1,0]] * len(vertices)
+        # Fill triangles with 1 to length of vertices
+        triangles = [i for i in range(len(vertices))]
+
+        #return Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs)
+        mc = MeshCollection()
+        m = Mesh(0, vertices=vertices, triangles=triangles, colors = colors, uvs=uvs, normals=normals)
+        mc.addMesh(m)
+        return ModelRenderer(mc)
+
     
+    def PassUniforms(self, shader: Shader):
+        shader.setInt("MIN_TESS_LEVEL", 1)
+        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setFloat("MIN_DISTANCE", 10)
+        shader.setFloat("MAX_DISTANCE", 380)
+
     def GeneratePerlinNoise(self, pixelArray: pg.PixelArray, octaves: int = 1, persistence: float = 0.5, lacunarity: float = 2, seed: int = 1):
         scale = (pixelArray.surface.get_width(), pixelArray.surface.get_height())
         

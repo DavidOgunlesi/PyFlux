@@ -22,7 +22,7 @@ from core.fileloader import MeshLoader
 from core.components.modelRenderer import ModelRenderer
 from core.components.postprocessing import PostProcessing
 from core.component import Component
-from core.components.terrain import Terrain
+from core.components.terrain import TerrainMesh
 import math
 renderer:Runtime = Runtime()
 
@@ -143,7 +143,7 @@ def ConstructScene():
     # o.transform.scale = glm.vec3(21,20,20)
     
     terrainObj = Object("terrain")
-    terrainObj.AddComponent(Terrain())
+    terrainObj.AddComponent(TerrainMesh())
     scene.Instantiate(terrainObj)
     
     return scene
