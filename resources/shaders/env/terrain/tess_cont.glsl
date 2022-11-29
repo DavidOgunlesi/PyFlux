@@ -12,6 +12,9 @@ out vec3 Normal_[];
 in vec4 FragPosLightSpace[];
 out vec4 FragPosLightSpace_[];
 
+in float Perlin[];
+out float Perlin_[];
+
 uniform mat4 model;
 uniform mat4 view;
 

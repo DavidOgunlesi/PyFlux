@@ -72,6 +72,23 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow);  
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow);  
 
+
+vec4 LinearGradient(float value, vec4[4] colors, float[4] locations) {
+    if (value <= locations[0]) {
+        return colors[0];
+    }
+    if (value >= locations[locations.length() - 1]) {
+        return colors[colors.length() - 1];
+    }
+    for (int i = 0; i < locations.length() - 1; i++) {
+        if (value >= locations[i] && value <= locations[i + 1]) {
+            float t = (value - locations[i]) / (locations[i + 1] - locations[i]);
+            return mix(colors[i], colors[i + 1], t);
+        }
+    }
+    return vec4(0.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
     vec3 norm = normalize(Normal);
@@ -110,9 +127,15 @@ void main()
 
     float h = (Height + 16)/64.0f;
 	vec4 heightCol = vec4(h, h, h, 1.0);
-
-    gl_FragColor = vec4(result, tex.a) * heightCol;
+    
+    // Colors from blue to yellow to green to brown to gray to white
+    vec4 colors[4] = vec4[4](vec4(0.0, 0.0, 1.0, 1.0), vec4(1.0, 1.0, 0.0, 1.0), vec4(0.0, 1.0, 0.0, 1.0), vec4(0.5, 0.5, 0.5, 1.0));
+    float locations[4] = float[4](0.0, 0.25, 0.5, 1.0);
+    vec4 color = LinearGradient(h, colors, locations);
+    gl_FragColor = vec4(result, tex.a) * color;
 } 
+
+
 
 float ShadowCalculation(DirLight light, vec3 normal, vec4 fragPosLightSpace){
     // perform perspective divide

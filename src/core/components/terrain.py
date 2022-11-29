@@ -21,9 +21,10 @@ if TYPE_CHECKING:
 
 class TerrainMesh(Component):
  
-    def __init__(self):
+    def __init__(self, resolution: int = 200):
         Component.__init__(self)
         self.plane = None
+        self.resolution = resolution
         
     def Awake(self):
         pass
@@ -42,14 +43,14 @@ class TerrainMesh(Component):
         height = heightmap.height
         # Create Plane
         planeObj = Object("plane")
-        meshRenderer = self.GenerateMesh(width, height, 20)
+        meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
         meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
         meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex = heightmap, specularTex=heightmap))
         meshRenderer.mesh[0].SetUniformPasser(self.PassUniforms)
         planeObj.AddComponent(meshRenderer)
         self.plane = self.scene.Instantiate(planeObj)
-        self.transform.scale = glm.vec3(1,1,1)
+        self.transform.scale = glm.vec3(100,100,100)
 
     def Update(self):
         self.plane.transform.position = self.transform.position
@@ -94,10 +95,10 @@ class TerrainMesh(Component):
 
     
     def PassUniforms(self, shader: Shader):
-        shader.setInt("MIN_TESS_LEVEL", 1)
+        shader.setInt("MIN_TESS_LEVEL", 3)
         shader.setInt("MAX_TESS_LEVEL", 64)
-        shader.setFloat("MIN_DISTANCE", 10)
-        shader.setFloat("MAX_DISTANCE", 380)
+        shader.setFloat("MIN_DISTANCE", 0)
+        shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
 
     def GeneratePerlinNoise(self, pixelArray: pg.PixelArray, octaves: int = 1, persistence: float = 0.5, lacunarity: float = 2, seed: int = 1):
         scale = (pixelArray.surface.get_width(), pixelArray.surface.get_height())

@@ -20,7 +20,7 @@ class Camera(Component):
         Component.__init__(self)
         self.viewMatrix = glm.mat4(1.0)
         self.projection = None
-        self.cameraSpeed = 100
+        self.cameraSpeed = 1000
         self.sensitivity = 1
         self.yaw = 90
         self.pitch = 0
@@ -30,7 +30,7 @@ class Camera(Component):
         self.zoomFactor = 1
         self.zoomSpeed = 50
         self.near = 0.1
-        self.far = 1000
+        self.far = 100000
         self.left:float = 0
         self.right:float = 8
         self.bottom: float = 0

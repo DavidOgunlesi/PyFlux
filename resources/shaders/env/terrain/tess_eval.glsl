@@ -8,6 +8,7 @@ in vec2 TexCoord_[];
 in vec3 Normal_[];
 in vec4 FragPosLightSpace_[];
 in mat4 model_[];
+in float Perlin_[];
 
 out vec3 FragPos;
 out vec3 ourColor;
@@ -39,6 +40,16 @@ void main(){
     vec2 t0 = (t01 - t00) * u + t00;
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
+
+    // bilinearly interpolate perlin noises across patch
+    // retrieve control point texture coordinates
+    float pn00 = Perlin_[0];
+    float pn01 = Perlin_[1];
+    float pn10 = Perlin_[2];
+    float pn11 = Perlin_[3];
+    float pn0 = (pn01 - pn00) * u + pn00;
+    float pn1 = (pn11 - pn10) * u + pn10;
+    float finalPerlin = (pn1 - pn0) * v + pn0;
 
     // lookup texel at patch coordinate for height and scale + shift as desired
     Height = texture(heightMap, texCoord).y * 64.0 - 16.0;
