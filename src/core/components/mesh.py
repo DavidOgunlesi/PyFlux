@@ -338,11 +338,11 @@ class Mesh(Component):
             gl.glActiveTexture(gl.GL_TEXTURE10)
             gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
         
-        #self.scene.skybox.material.use()
+        self.scene.skybox.material.use()
         shader.setMat4("view", viewMtx)
         shader.setMat4("projection", projection)
         shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
-        shader.setVec3("test", glm.vec3(0,1,1).to_list())
+        shader.setInt("skybox", 30)
         lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
         shader.setMat4("lightSpaceMatrix", lightSpaceMatrix)
         shader.setInt("shadowMap", 10)
@@ -365,8 +365,7 @@ class Mesh(Component):
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
             
         gl.glBindVertexArray(0)
-
-        #self.scene.skybox.material.free()
+        self.scene.skybox.material.free()
         shader.free()
         mat.free()
         

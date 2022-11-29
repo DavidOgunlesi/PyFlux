@@ -118,6 +118,7 @@ class CubeMap(Texture):
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, 0)
         
     def use(self):
+        gl.glActiveTexture(gl.GL_TEXTURE30)
         gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.textureID)
         pass
         

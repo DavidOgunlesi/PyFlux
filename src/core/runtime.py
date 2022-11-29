@@ -70,7 +70,7 @@ class Runtime:
             
             if input.GetKeyDown(pg.K_ESCAPE):
                 self.active = False
-                
+            
             self.scene.UpdateScene() 
             # self.OcculusionPrePass() TODO: Fix this
             self.RenderShadowMap()
@@ -81,7 +81,6 @@ class Runtime:
                 self.RenderSceneWithoutPostProcessing()
                 
             # self.renderTexMesh.Render()
-            
             eventsystem.ExecuteEvents()
             gametime.deltaTime = time.time() - current_time
             gametime.time += gametime.deltaTime
