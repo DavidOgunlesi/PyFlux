@@ -307,12 +307,13 @@ class Mesh(Component):
     def RenderInstanced(self, shadowMap=0):
         
         # Update model matrix if we are only rendering one instance
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.IVA)
-        if len(self.modelMatrices) == 1:
+       
+        if len(self.modelMatrices) == 1: 
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.IVA)
             self.modelMatrices.clear()
             self.modelMatrices.append(self.transform.GetPoseMatrix())
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.ModelMatricesToArr(np.float32), gl.GL_STATIC_DRAW)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+            gl.glBufferData(gl.GL_ARRAY_BUFFER, self.ModelMatricesToArr(np.float32), gl.GL_STATIC_DRAW)
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
         
         # Render as per normal
         mat = self.material

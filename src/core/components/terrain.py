@@ -39,15 +39,15 @@ class Terrain(Component):
         heightmap = Texture('textures/temp.jpeg')
         # Create Plane
         planeObj = Object("plane")
-        meshRenderer = PRIMITIVE.PLANE()
-        # meshRenderer = PRIMITIVE.PLANE_PATCHES()
-        #gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
-        #meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
-        #meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "fragment",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex = heightmap, specularTex=None))
+        #meshRenderer = PRIMITIVE.PLANE()
+        meshRenderer = PRIMITIVE.PLANE_PATCHES()
+        gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
+        meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
         meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "fragment"), diffuseTex = heightmap, specularTex=None))
+        #meshRenderer.mesh[0].SetMaterial(Material(Shader("env/terrain/vert", "fragment"), diffuseTex = heightmap, specularTex=None))
         planeObj.AddComponent(meshRenderer)
         self.plane = self.scene.Instantiate(planeObj)
-        self.transform.scale = glm.vec3(1000,1,1000)
+        #self.transform.scale = glm.vec3(1000,1,1000)
 
     def Update(self):
         self.plane.transform.position = self.transform.position

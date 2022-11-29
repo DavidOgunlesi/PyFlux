@@ -105,7 +105,7 @@ def ConstructScene():
     o.transform.position = glm.vec3(0,4,1)
     
     modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
-    size = 20*20
+    size = 200*200
     modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
 
     testObj = Object("cube3")
@@ -178,7 +178,8 @@ def main():
     gl.glFrontFace(gl.GL_CCW)
     
     gl.glEnable(gl.GL_FRAMEBUFFER_SRGB)
-    
+    #gl.glPolygonMode(gl.GL_FRONT, gl.GL_LINE)
+    #gl.glPolygonMode(gl.GL_BACK, gl.GL_LINE)
     # tell opengl that it should expect vertex arrays
     gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
     
