@@ -66,6 +66,7 @@ uniform SpotLight spotLights[NR_SPOT_LIGHTS];
 
 uniform samplerCube skybox;
 uniform sampler2D shadowMap;
+uniform int terrainTiling;
 
 layout (binding = 4) uniform sampler2D grassTexture;
 layout (binding = 5) uniform sampler2D sandTexture;
@@ -148,7 +149,7 @@ void main()
     vec2 uv = TexCoord + vec2(Perlin/1000, Perlin/1000);
     // clamp to [0, 1]
     uv = clamp(uv, 0.0, 1.0);
-    vec2 normTexCoord = 400 * uv * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
+    vec2 normTexCoord = terrainTiling * uv * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
 
     
 
@@ -156,7 +157,7 @@ void main()
     float locations[numberOfTextures] = float[numberOfTextures](0.1, 0.11, 0.12, 0.26, 0.5, 0.63);
     vec4 color = LinearGradient(h, colors, locations);
     vec4 color2 = LinearGradient(h, colors2, locations);
-    gl_FragColor = color2 * color;
+    gl_FragColor = color2 * color * (heightCol + vec4(0,0, 0.2-heightCol.z,1)) * ( (1.0 - shadow));
 } 
 
 

@@ -98,7 +98,7 @@ class TerrainMesh(Component):
         mat.SetTexture(water, gl.GL_TEXTURE7)
 
         meshRenderer.meshes[0].SetMaterial(mat)
-        meshRenderer.meshes[0].SetUniformPasser(self.PassUniforms)
+        meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrain)
         planeObj.AddComponent(meshRenderer)
 
         self.plane = self.scene.Instantiate(planeObj)
@@ -130,6 +130,15 @@ class TerrainMesh(Component):
         self.modelMatrices = [self.GetPoseMatrices(i,self.subdivision, self.modelRenderer.meshes[0], size) for i in range(size)]
 
     def Update(self):
+        chunkSize = self.terrainScale / self.chunkNum
+        if self.scene.mainCamera.transform.position.y * chunkSize < 8:
+            self.UpdateChunks()
+
+        self.PreChunks()
+        if input.GetKeyPressed(pg.K_UP):
+            self.waterPlane.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
+
+    def UpdateChunks(self):
         for x in range(-1, 1):
             for z in range(-1, 1):
                 chunkX, chunkZ = self.GetCurrentChunkNumber(self.scene.mainCamera.transform.position.x, self.scene.mainCamera.transform.position.z)
@@ -137,7 +146,6 @@ class TerrainMesh(Component):
                 chunkZ += z
                 if (chunkX, chunkZ) not in self.treeChunks:
                     self.GenerateFoliage(chunkX, chunkZ)
-                    #self.treeChunks[(chunkX, chunkZ)] = self.GenerateFoliage(chunkX, chunkZ, self.heightmap, width=self.width//10, height=self.height//10, subdivision=10)
                     pass
 
         # remove chunks that are too far away
@@ -152,10 +160,6 @@ class TerrainMesh(Component):
 
         for chunk in destoryBuffer:
             del self.treeChunks[chunk]
-
-        self.PreChunks()
-        if input.GetKeyPressed(pg.K_UP):
-            self.waterPlane.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
 
     def GenerateMesh(self, width, height, resolution):
         rez = resolution
@@ -247,12 +251,13 @@ class TerrainMesh(Component):
         mat4Arr = mat4Arr.flatten()
         return mat4Arr
 
-    def PassUniforms(self, shader: Shader):
+    def PassUniformsTerrain(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 3)
         shader.setInt("MAX_TESS_LEVEL", 64)
         shader.setFloat("MIN_DISTANCE", 0)
         shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
         shader.setFloat("time", self.timeseed)
+        shader.setInt("terrainTiling", 4000)
 
     def PassUniformsWater(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 3)
@@ -263,6 +268,7 @@ class TerrainMesh(Component):
 
     def PassUniformsTree(self, shader: Shader):
         shader.setFloat("terrainscale", self.terrainScale)
+        
 
     def GeneratePerlinNoise(self, pixelArray: pg.PixelArray, octaves: int = 1, persistence: float = 0.5, lacunarity: float = 2, seed: int = 1):
         scale = (pixelArray.surface.get_width(), pixelArray.surface.get_height())

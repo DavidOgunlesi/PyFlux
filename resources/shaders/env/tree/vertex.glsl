@@ -36,11 +36,18 @@ void main()
     
     // lookup texel at patch coordinate for height and scale + shift as desired
     float Height = (texture(heightMap, (FragPos.xz-vec2(terrainscale/2,terrainscale/2))/terrainscale).y/2) * 64.0 - 16.0;
-    if (Height < 10.0) {
+    
+    MVP = projection * view * modelInstMtx;
+     if (Height < 10.0) {
         Height = Height * 1.5;
     }
-    MVP = projection * view * modelInstMtx;
-    gl_Position =  projection * view * vec4(FragPos + vec3(0, Height*100, 0),1);
+
+    if (Height < -10000.0 || Height < -0) {
+        // draw off screen
+        gl_Position =  vec4(5,5,5,5);
+    }else{
+        gl_Position =  projection * view * vec4(FragPos + vec3(0, Height*100, 0),1);
+    }
     
     ourColor = aColor;
     TexCoord = aTexCoord;
