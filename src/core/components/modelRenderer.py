@@ -19,7 +19,7 @@ class ModelRenderer(Component):
 
         for mesh in self.meshCollection.meshes:
             c.meshCollection.addMesh(mesh.Copy())
-
+    
         c.modelMatrices = self.modelMatrices
         return c
 

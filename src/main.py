@@ -108,8 +108,8 @@ def ConstructScene():
     
     modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
     
-    size = 200*200
-    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
+    # size = 200*200
+    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
 
     testObj = Object("cube3")
     meshRenderer = PRIMITIVE.CUBE()
@@ -158,7 +158,7 @@ def ConstructScene():
     o.transform.scale = glm.vec3(21,20,20)
     
     terrainObj = Object("terrain")
-    terrainObj.AddComponent(TerrainMesh(20))
+    terrainObj.AddComponent(TerrainMesh())
     scene.Instantiate(terrainObj)
     
     return scene

@@ -83,7 +83,8 @@ void main(){
     vec4 p = (p1 - p0) * v + p0;
 
     // displace point along normal
-    p += normal * Height;
+    p += normal;// * Height;
+    p += vec4(0, Height, 0, 0);
     FragPos = vec3(transpose(model) * p);
     Normal = vec3(normal);
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);

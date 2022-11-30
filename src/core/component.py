@@ -11,14 +11,16 @@ class Component:
         self.scene: Scene = None
         self.parent: Object = None
         self.transform: Transform = None
-        self.name = ""
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
-        self.name = parent.name
         self.scene = scene
         self.parent = parent
         self.transform = transform
         
+    @property
+    def name(self):
+        return self.parent.name
+
     def GetComponent(self, type: Type) -> Component:
         return self.parent.FindComponentOfType(type)
     

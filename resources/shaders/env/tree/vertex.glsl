@@ -12,6 +12,7 @@ out vec3 Normal;
 out vec4 FragPosLightSpace;
 out mat4 MVP;
 
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
@@ -22,23 +23,24 @@ layout (binding = 3) uniform sampler2D heightMap;
 void main()
 {
     // transpose bc numpy is column major and opengl is row major AHHH this was annoying to figure out
-    mat4 model = transpose(modelInstanceMatrix);
+    mat4 modelInstMtx = transpose(modelInstanceMatrix);
 
     
     
     //to do generate on CPU
-    mat3 NormalMat = mat3(transpose(inverse(model)));
+    mat3 NormalMat = mat3(transpose(inverse(modelInstMtx)));
     Normal = NormalMat * aNorm;
 
-    FragPos = vec3(model * vec4(aPos, 1.0));
+    //vec3 offset = vec3(model * vec4(aPos, 1.0));
+    FragPos = vec3(model * modelInstMtx * vec4(aPos, 1.0));
+    
     // lookup texel at patch coordinate for height and scale + shift as desired
-    float Height = (texture(heightMap, FragPos.xz/terrainscale).y/2) * 64.0 - 16.0;
-    // Ramp values below a certain height down
+    float Height = (texture(heightMap, (FragPos.xz-vec2(terrainscale/2,terrainscale/2))/terrainscale).y/2) * 64.0 - 16.0;
     if (Height < 10.0) {
         Height = Height * 1.5;
     }
-    MVP = projection * view * model;
-    gl_Position =  projection * view * vec4(FragPos + vec3(0, Height, 0),1);
+    MVP = projection * view * modelInstMtx;
+    gl_Position =  projection * view * vec4(FragPos + vec3(0, Height*100, 0),1);
     
     ourColor = aColor;
     TexCoord = aTexCoord;

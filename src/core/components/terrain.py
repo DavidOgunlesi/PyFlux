@@ -57,9 +57,13 @@ class TerrainMesh(Component):
         self.width = 0
         self.height = 0
         self.treePrefab = Object("tree")
-        modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
-        self.treePrefab.AddComponent(modelRenderer)
-    
+        self.modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
+        self.treePrefab.AddComponent(self.modelRenderer)
+        #for mesh in self.modelRenderer.meshes:
+            #mesh.VAO, mesh.IVA = mesh.GenerateVAO()
+
+        self.modelMatrices = []
+
     def Awake(self):
         # Create heightmap texture with perlin
         
@@ -78,7 +82,7 @@ class TerrainMesh(Component):
         sand = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
-
+        scale = 100
         # Create Plane
         planeObj = Object("terrrain plane")
         
@@ -98,7 +102,7 @@ class TerrainMesh(Component):
         planeObj.AddComponent(meshRenderer)
 
         self.plane = self.scene.Instantiate(planeObj)
-        self.plane.transform.scale = glm.vec3(100,100,100)
+        self.plane.transform.scale = glm.vec3(scale,scale,scale)
 
         waterplaneObj = Object("water plane")
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
@@ -111,14 +115,19 @@ class TerrainMesh(Component):
         waterplaneObj.AddComponent(meshRenderer)
 
         self.waterPlane = self.scene.Instantiate(waterplaneObj)
-        self.waterPlane.transform.scale = glm.vec3(100,100,100)
-        self.waterPlane.transform.position = glm.vec3(0,1473,0)
+        self.waterPlane.transform.scale = glm.vec3(scale,scale,scale)
+        self.waterPlane.transform.position = glm.vec3(0,1473/100 * scale,0)
 
-        self.terrainScale = width*100
+        self.terrainScale = width*scale
         self.heightmap = heightmap
         self.width = width
         self.height = height
 
+        width=self.width//10
+        height=self.height//10
+        self.subdivision=10
+        size = (width//self.subdivision)*(height//self.subdivision)
+        self.modelMatrices = [self.GetPoseMatrices(i,self.subdivision, self.modelRenderer.meshes[0], size) for i in range(size)]
 
     def Update(self):
         for x in range(-1, 1):
@@ -210,25 +219,20 @@ class TerrainMesh(Component):
             self.treeChunks[(chunkX, chunkZ)] = inst
 
             x, z = self.ChunkToPosition(chunkX, chunkZ)
-            offset = glm.vec3(x, 0, z)
+            inst.transform.position = glm.vec3(x, 100, z)
             modelRenderer: ModelRenderer = inst.FindComponentOfType(ModelRenderer)
             modelRenderer.SetShader(Shader("env/tree/vertex", "fragment"))
-
+            
             for mesh in modelRenderer.meshes:
                 mesh.SetUniformPasser(self.PassUniformsTree)
 
             for material in modelRenderer.materials:
                 material.SetTexture(self.heightmap, gl.GL_TEXTURE3)
 
-            width=self.width//10
-            height=self.height//10
-            subdivision=10
-            size = (width//subdivision)*(height//subdivision)
-            modelRenderer.modelMatrices = np.array([self.GetPoseMatrices(i,subdivision, offset, modelRenderer.meshes[0], size) for i in range(size)])
-
+            modelRenderer.modelMatrices = self.modelMatrices
         self.pretreeChunks.clear()
 
-    def GetPoseMatrices(self, i: int, subdivision:int, offset: glm.vec3, c:Component, size: int):
+    def GetPoseMatrices(self, i: int, subdivision:int, c:Component, size: int):
         # Create vectors in a grid based on i index, with spacing
         spacing = subdivision
         vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
@@ -237,8 +241,11 @@ class TerrainMesh(Component):
         randomScale = glm.vec3(scale, scale, scale)
         maxOffset = spacing/2
         randomOffset = glm.vec3(random.uniform(-maxOffset,maxOffset), 0, random.uniform(-maxOffset,maxOffset))
-        poseMtx = c.transform.GetPoseMatrix(translation=vec+randomOffset+offset, rotation=randomRotation, scale=randomScale)
-        return poseMtx
+
+        poseMtx = c.transform.GetPoseMatrix(translation=vec+randomOffset, rotation=randomRotation, scale=randomScale)
+        mat4Arr = np.array(poseMtx, dtype=np.float32)
+        mat4Arr = mat4Arr.flatten()
+        return mat4Arr
 
     def PassUniforms(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 3)

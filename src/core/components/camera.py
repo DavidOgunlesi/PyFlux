@@ -42,7 +42,7 @@ class Camera(Component):
         Component.__init__(self)
         self.viewMatrix = glm.mat4(1.0)
         self.projection = None
-        self.cameraSpeed = 1000
+        self.cameraSpeed = 10
         self.sensitivity = 1
         self.yaw = 90
         self.pitch = 0
@@ -98,8 +98,8 @@ class Camera(Component):
     
     def DoCameraZoom(self):
         _,sy = input.GetMouseWheel()
-        self.zoomFactor -= sy * self.zoomSpeed * gm.deltaTime
-        self.zoomFactor = min(max(self.zoomFactor, 0), 10)
+        self.cameraSpeed += sy * self.cameraSpeed * gm.deltaTime * 100
+        self.cameraSpeed = min(max(self.cameraSpeed, 1), 10000)
     
     def DoCameraMovement(self):
         if input.GetKeyPressed(pg.K_w) and self.projType == 0:

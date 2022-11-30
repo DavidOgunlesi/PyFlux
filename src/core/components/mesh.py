@@ -116,7 +116,8 @@ class Mesh(Component):
         
     
     def Start(self):
-        self.VAO, self.IVA = self.GenerateVAO()
+        if self.VAO == None:
+            self.VAO, self.IVA = self.GenerateVAO()
         return super().Start()
     
     def Update(self):
@@ -240,7 +241,9 @@ class Mesh(Component):
         
         # instanced model matrix arrays
         if len(self.modelMatrices) == 0:
-            self.modelMatrices.append(self.transform.GetPoseMatrix())
+            mat4Arr = np.array(self.transform.GetPoseMatrix(), dtype=np.float32)
+            mat4Arr = mat4Arr.flatten()
+            self.modelMatrices.append(mat4Arr)
         
         numOfAttribComponents = 11
         #vertex position
@@ -261,7 +264,7 @@ class Mesh(Component):
         
         
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, ivaID)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,  self.ModelMatricesToArr(np.float32), gl.GL_STATIC_DRAW)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,  self.ToArr(self.modelMatrices, np.float32), gl.GL_STATIC_DRAW)
         
         numOfAttribComponents = 16
         
