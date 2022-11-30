@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Callable
 from core.object import Object
 import copy 
 from core.components.camera import Camera
@@ -7,6 +7,10 @@ from core.components.light import Light, DirectionalLight
 from core.components.skybox import Skybox
 from core.components.mesh import Mesh
 from core.components.modelRenderer import ModelRenderer
+from core.component import Component
+import time
+import threading
+import pygame as pg
 class Scene:
     
     def __init__(self):
@@ -16,13 +20,32 @@ class Scene:
         self.mainLight: DirectionalLight = None
         self.lightCollection = LightCollection()
         self.skybox: Skybox = None
+        self.__componentsToSetup: List[Component] = []
         
     def Instantiate(self, obj: Object) -> Object:
-        obj = copy.deepcopy(obj)
+        return self.InstantiateOnThread(obj, None)
+
+    def InstantiateThreaded(self, obj: Object, callback:Callable) -> Object:
+        start = time.time()
+        x = threading.Thread(target=self.InstantiateOnThread, args=(obj,callback))
+        x.start()
+        #print("Instantiate time: ", time.time() - start)
+
+    def InstantiateOnThread(self, obj: Object, callback:Callable):
+        pg.event.pump()
+        obj = obj.Copy()
         obj.Initialise(self)
         self.__objects.append(obj)
+        if self.initialised:
+            for component in obj.components:
+                self.QueueComponentSetup(component)
+
+        if callback != None:
+            callback(obj)
+            
         return obj
-        
+
+
     def GetObjectCollection(self):
         return self.__objects
     
@@ -40,8 +63,14 @@ class Scene:
         if self.mainCamera == None:
             print("Main Camera not set, scene disabled")
             return
+        for component in self.__componentsToSetup:
+            component.Awake()
+            component.Start()
+        self.__componentsToSetup.clear()
+
         for obj in self.__objects:
             obj.UpdateComponents()
+        
     
     def GetMeshes(self):
         meshes = []
@@ -77,3 +106,9 @@ class Scene:
         skyboxObj.AddComponent(sky)
         skyboxObjInst = self.Instantiate(skyboxObj)
         self.skybox = skyboxObjInst.FindComponentOfType(Skybox)
+
+    def RemoveObject(self, obj: Object):
+        self.__objects.remove(obj)
+
+    def QueueComponentSetup(self, component):
+        self.__componentsToSetup.append(component)

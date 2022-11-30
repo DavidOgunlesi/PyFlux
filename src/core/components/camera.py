@@ -16,6 +16,28 @@ import core.input as input
 from core.components.transform import Transform
 
 class Camera(Component):
+    def Copy(self) -> Component:
+        c = Camera()
+        c.viewMatrix = self.viewMatrix
+        c.projection = self.projection
+        c.cameraSpeed = self.cameraSpeed
+        c.sensitivity = self.sensitivity
+        c.yaw = self.yaw
+        c.pitch = self.pitch
+        c.cameraFront = self.cameraFront
+        c.cameraUp = self.cameraUp
+        c.fov = self.fov
+        c.zoomFactor = self.zoomFactor
+        c.zoomSpeed = self.zoomSpeed
+        c.near = self.near
+        c.far = self.far
+        c.left = self.left
+        c.right = self.right
+        c.bottom = self.bottom
+        c.top = self.top
+        c.projType = self.projType
+        return c
+        
     def __init__(self):
         Component.__init__(self)
         self.viewMatrix = glm.mat4(1.0)

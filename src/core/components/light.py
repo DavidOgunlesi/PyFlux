@@ -11,7 +11,14 @@ if TYPE_CHECKING:
     from components.transform import Transform
 
 class Light(Component):
-    
+    def Copy(self) -> Component:
+        c = Light()
+        c.ambient = self.ambient
+        c.diffuse = self.diffuse
+        c.specular = self.specular
+        c.sprite = self.sprite
+        return c
+        
     def __init__(self):
         Component.__init__(self)
         self.ambient = glm.vec3(0.2, 0.2, 0.2)
@@ -27,7 +34,7 @@ class Light(Component):
     def Start(self):
         sprR: SpriteRenderer = self.GetComponent(SpriteRenderer)   
         sprR.SetSprite(Texture("textures/light.png")) 
-        sprR.modelRenderer.mesh[0].castShadows = False
+        sprR.modelRenderer.meshes[0].castShadows = False
     
     def Init(self, parent: Object, scene: Scene, transform: Transform):
         super().Init(parent, scene, transform)

@@ -132,8 +132,10 @@ void main()
     vec3 R = envReflect;
     R *= vec3(1, -1, 1);
     vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir));
+
+    vec4 depthBufferValue = texture(shadowMap, FragPosLightSpace.xy);
     gl_FragColor = vec4(0.2,0.2,1,(1-dot(viewDir, norm))*0.9) + vec4(0,0,0,0.8);
-    gl_FragColor = mix(gl_FragColor, skyboxContribution, 0.5);
+    gl_FragColor = mix(gl_FragColor, skyboxContribution, 0.5) * vec4(result, 1.0);; 
 } 
 
 

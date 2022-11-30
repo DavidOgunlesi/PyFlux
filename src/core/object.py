@@ -20,7 +20,6 @@ class Object:
             
     def SetupComponents(self):
         for component in self.components:
-            #print("Setting up component: " + str(type(component)))
             component.Awake()
     
     def InitialiseComponents(self):
@@ -35,11 +34,30 @@ class Object:
         self.components.append(component)
         component.Init(parent = self, scene = self.scene, transform = self.transform)
         if self.scene != None and self.scene.initialised:
-            component.Awake()
-            component.Start()
+            self.scene.QueueComponentSetup(component)
         
     def FindComponentOfType(self, _type: Type) -> Component:
         for component in self.components:
             if type(component) is _type:
                 return component
         return None
+
+    def Destroy(self):
+        self.scene.RemoveObject(self)
+        for component in self.components:
+            component.OnDestroy()
+        for component in self.components:
+            del component
+        self.components.clear()
+        self.scene = None
+        self.transform = None
+
+    def Copy(self):
+        newObj = Object(self.name)
+        newObj.components.clear()
+        
+        for component in self.components:
+            newObj.components.append(component.Copy())
+        newObj.transform = newObj.FindComponentOfType(Transform)
+        newObj.name = self.name
+        return newObj

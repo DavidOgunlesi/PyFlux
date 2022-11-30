@@ -33,6 +33,28 @@ class Mesh(Component):
         TRIANGLES = gl.GL_TRIANGLES
         PATCHES = gl.GL_PATCHES
     
+    def Copy(self) -> Component:
+        c = Mesh(2, vertices=self.vertices)
+        c.vertices = self.vertices
+        c.VAO = self.VAO
+        c.material = self.material
+        c.IVA = self.IVA
+        c.offset = self.offset
+        c.cullMode = self.cullMode
+        c.writeDepthMask = self.writeDepthMask
+        c.viewMtxOverride = self.viewMtxOverride
+        c.viewMtxOverrideValue = self.viewMtxOverrideValue
+        c.doViewSorting = self.doViewSorting
+        c.castShadows = self.castShadows
+        c.renderPass = self.renderPass
+        c.modelMatrices = self.modelMatrices
+        c.drawMode = self.drawMode
+        c.__passUniforms = self.__passUniforms
+        c.calculateNormals = self.calculateNormals
+        c.vertexData = self.vertexData
+        c.faceData = self.faceData
+        return c
+
     def __init__(self, type: int, **kwargs):
         Component.__init__(self)
         self.vertices = kwargs["vertices"]
@@ -56,9 +78,9 @@ class Mesh(Component):
             self.calculateNormals = True
         if type == 0:
             self.EasyConstructMesh(kwargs)
-        else:
+        elif type == 1:
             self.ConstructMesh(kwargs)
-    
+
     def EasyConstructMesh(self, kwargs):
         vertices = kwargs["vertices"]
         triangles = kwargs["triangles"]
@@ -100,6 +122,9 @@ class Mesh(Component):
     def Update(self):
         pass
     
+    def SetShader(self, shader:Shader):
+        self.material.shader = shader
+
     def SetDrawMode(self, mode: Mesh.DrawMode):
         self.drawMode = mode
     
@@ -364,7 +389,7 @@ class Mesh(Component):
         #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
         #gl.glPointSize(10);   
         gl.glDrawElementsInstanced(self.drawMode, len(self.faceData), gl.GL_UNSIGNED_INT, None,  len(self.modelMatrices))
-        
+        #print(self.name, len(self.modelMatrices), len(self.faceData), len(self.modelMatrices) * len(self.faceData))
         if shadowMap != 0:
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
             
@@ -376,66 +401,11 @@ class Mesh(Component):
             
     
     def Render(self, shadowMap=0):
+        if self.VAO == None:
+            return
         self.RenderInstanced(shadowMap)
         return
-        from core.material import Material
-        # Set shader and VAO to be used to render calls 
-        # Every drawing call after this point will use the prgram and it's shaders
-        # and also all the VBOs defined in the VAO GLOBAL.GLOBAL_RENDERSHADER
-        mat = self.material
-        shader = None
-        if GLOBAL.GLOBAL_RENDERSHADER:
-            shader = GLOBAL.GLOBAL_RENDERSHADER
-            shader.use()
-            mat.use()
-        else: 
-            shader = self.material.shader
-            shader.use()
-            mat.use()
-            mat.SetProperties(self.scene.lightCollection)
-            
-            
-        modelMtx = self.transform.GetPoseMatrix()
-        
-        projection = self.scene.mainCamera.projection
-        if self.viewMtxOverride:
-            viewMtx = self.viewMtxOverrideValue   
-        else:
-            viewMtx = self.scene.mainCamera.viewMatrix
-        
-        if shadowMap != 0:
-            gl.glActiveTexture(gl.GL_TEXTURE10)
-            gl.glBindTexture(gl.GL_TEXTURE_2D, shadowMap)
 
-        #self.scene.skybox.material.use()
-        shader.setMat4("model", modelMtx)
-        shader.setMat4("view", viewMtx)
-        shader.setMat4("projection", projection)
-        shader.setVec3("cameraPos", self.scene.mainCamera.transform.position.to_list())
-        shader.setVec3("test", glm.vec3(0,1,1).to_list())
-        lightSpaceMatrix = GLOBAL.CURRENTRENDERCONTEXT.GetLightSpaceTransform()
-        shader.setMat4("lightSpaceMatrix", lightSpaceMatrix)
-        shader.setInt("shadowMap", 10)
-        shader.setVec3("dirLight.ambient",  self.scene.mainLight.ambient.to_list())
-        shader.setVec3("dirLight.diffuse",  self.scene.mainLight.diffuse.to_list())
-        shader.setVec3("dirLight.specular", self.scene.mainLight.specular.to_list())
-        shader.setVec3("dirLight.direction", self.scene.mainLight.direction.to_list())
-        
-        self.ApplyCulling()
-        self.ApplyDepthWriteSetting()
-        gl.glBindVertexArray(self.VAO)
-        
-        # Actually draw the stuff!
-        #gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
-        #gl.glPointSize(10);   
-        gl.glDrawElements(gl.GL_TRIANGLES, len(self.faceData), gl.GL_UNSIGNED_INT, None)
-        
-        if shadowMap != 0:
-            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-            
-        #self.scene.skybox.material.free()
-        shader.free()
-        mat.free()
         
     def LightweightRender(self, shader: Shader, texture: Texture, scriptable: Callable = None):
         

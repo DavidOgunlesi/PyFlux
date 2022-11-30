@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple, List, Dict, Any
+from typing import TYPE_CHECKING, Tuple, List, Dict, Any, Tuple
 from core.texture import GeneratedTexture, Texture
 from core.component import Component
 from core.components.mesh import Mesh
@@ -16,23 +16,51 @@ from perlin_noise import PerlinNoise
 from core.collections.mesh import MeshCollection
 from core.components.modelRenderer import ModelRenderer
 import core.input as input
+import numpy as np
+from core.fileloader import MeshLoader
+import math
+import random
+
+
+import threading
+import time
 
 if TYPE_CHECKING:
     from core.scene import Scene
 
 class TerrainMesh(Component):
- 
+    def Copy(self) -> Component:
+        c = TerrainMesh(self.resolution)
+        c.plane = self.plane
+        c.timeseed = self.timeseed
+        c.waterPlane = self.waterPlane
+        c.terrainScale = self.terrainScale
+        c.treeChunks = self.treeChunks
+        c.chunkNum = self.chunkNum
+        c.heightmap = self.heightmap
+        c.width = self.width
+        c.height = self.height
+        c.treePrefab = self.treePrefab.Copy()
+        return c
+        
     def __init__(self, resolution: int = 200):
         Component.__init__(self)
         self.plane = None
         self.resolution = resolution
         self.timeseed = gametime.time
         self.waterPlane = None
-        
-    def Awake(self):
-        pass
+        self.terrainScale = 0
+        self.pretreeChunks: Dict[Tuple[int, int], ModelRenderer] = {}
+        self.treeChunks: Dict[Tuple[int, int], ModelRenderer] = {}
+        self.chunkNum = 1000
+        self.heightmap = None
+        self.width = 0
+        self.height = 0
+        self.treePrefab = Object("tree")
+        modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
+        self.treePrefab.AddComponent(modelRenderer)
     
-    def Start(self):
+    def Awake(self):
         # Create heightmap texture with perlin
         
         #surface = pg.Surface((width, height))
@@ -50,12 +78,13 @@ class TerrainMesh(Component):
         sand = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
+
         # Create Plane
         planeObj = Object("terrrain plane")
         
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
-        meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
+        meshRenderer.meshes[0].SetDrawMode(Mesh.DrawMode.PATCHES)
         mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=dirt, specularTex=rock)
 
         mat.SetTexture(heightmap, gl.GL_TEXTURE3)
@@ -64,8 +93,8 @@ class TerrainMesh(Component):
         mat.SetTexture(dirtAlt, gl.GL_TEXTURE6)
         mat.SetTexture(water, gl.GL_TEXTURE7)
 
-        meshRenderer.mesh[0].SetMaterial(mat)
-        meshRenderer.mesh[0].SetUniformPasser(self.PassUniforms)
+        meshRenderer.meshes[0].SetMaterial(mat)
+        meshRenderer.meshes[0].SetUniformPasser(self.PassUniforms)
         planeObj.AddComponent(meshRenderer)
 
         self.plane = self.scene.Instantiate(planeObj)
@@ -74,18 +103,48 @@ class TerrainMesh(Component):
         waterplaneObj = Object("water plane")
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
-        meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
+        meshRenderer.meshes[0].SetDrawMode(Mesh.DrawMode.PATCHES)
         mat = Material(Shader("env/water/vert", "env/water/frag",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/water/tess_eval"))
 
-        meshRenderer.mesh[0].SetMaterial(mat)
-        meshRenderer.mesh[0].SetUniformPasser(self.PassUniformsWater)
+        meshRenderer.meshes[0].SetMaterial(mat)
+        meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsWater)
         waterplaneObj.AddComponent(meshRenderer)
 
         self.waterPlane = self.scene.Instantiate(waterplaneObj)
         self.waterPlane.transform.scale = glm.vec3(100,100,100)
         self.waterPlane.transform.position = glm.vec3(0,1473,0)
 
+        self.terrainScale = width*100
+        self.heightmap = heightmap
+        self.width = width
+        self.height = height
+
+
     def Update(self):
+        for x in range(-1, 1):
+            for z in range(-1, 1):
+                chunkX, chunkZ = self.GetCurrentChunkNumber(self.scene.mainCamera.transform.position.x, self.scene.mainCamera.transform.position.z)
+                chunkX += x
+                chunkZ += z
+                if (chunkX, chunkZ) not in self.treeChunks:
+                    self.GenerateFoliage(chunkX, chunkZ)
+                    #self.treeChunks[(chunkX, chunkZ)] = self.GenerateFoliage(chunkX, chunkZ, self.heightmap, width=self.width//10, height=self.height//10, subdivision=10)
+                    pass
+
+        # remove chunks that are too far away
+        destoryBuffer = []
+        for chunk in self.treeChunks:
+            currChunk = self.GetCurrentChunkNumber(self.scene.mainCamera.transform.position.x, self.scene.mainCamera.transform.position.z)
+            if abs(chunk[0] - currChunk[0]) > 2 or abs(chunk[1] - currChunk[1]) > 2:
+                # Delete mesh
+                obj: Object = self.treeChunks[chunk]
+                obj.Destroy()
+                destoryBuffer.append(chunk)
+
+        for chunk in destoryBuffer:
+            del self.treeChunks[chunk]
+
+        self.PreChunks()
         if input.GetKeyPressed(pg.K_UP):
             self.waterPlane.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
 
@@ -124,7 +183,63 @@ class TerrainMesh(Component):
         mc.addMesh(m)
         return ModelRenderer(mc)
 
-    
+    def GetCurrentChunkNumber(self, x, z):
+        # Split terrain into chunks
+        chunkSize = self.terrainScale / self.chunkNum
+        chunkX = x // chunkSize
+        chunkZ = z // chunkSize
+        return chunkX, chunkZ
+
+    def ChunkToPosition(self, chunkX, chunkZ):
+        chunkSize = self.terrainScale / self.chunkNum
+        return chunkX * chunkSize, chunkZ * chunkSize
+
+    def GenerateFoliage(self, chunkX, chunkZ):
+        start = time.time()
+        self.scene.InstantiateThreaded(self.treePrefab, lambda obj: self.OnTerrainInstantiated(obj, chunkX, chunkZ))
+        #print("Instantiate time: ", time.time() - start)
+        start = time.time()
+
+    def OnTerrainInstantiated(self, inst, chunkX, chunkZ):
+        self.pretreeChunks[(chunkX, chunkZ)] = inst
+
+    def PreChunks(self):
+        for chunkX, chunkZ in self.pretreeChunks:
+            
+            inst = self.pretreeChunks[(chunkX, chunkZ)]
+            self.treeChunks[(chunkX, chunkZ)] = inst
+
+            x, z = self.ChunkToPosition(chunkX, chunkZ)
+            offset = glm.vec3(x, 0, z)
+            modelRenderer: ModelRenderer = inst.FindComponentOfType(ModelRenderer)
+            modelRenderer.SetShader(Shader("env/tree/vertex", "fragment"))
+
+            for mesh in modelRenderer.meshes:
+                mesh.SetUniformPasser(self.PassUniformsTree)
+
+            for material in modelRenderer.materials:
+                material.SetTexture(self.heightmap, gl.GL_TEXTURE3)
+
+            width=self.width//10
+            height=self.height//10
+            subdivision=10
+            size = (width//subdivision)*(height//subdivision)
+            modelRenderer.modelMatrices = np.array([self.GetPoseMatrices(i,subdivision, offset, modelRenderer.meshes[0], size) for i in range(size)])
+
+        self.pretreeChunks.clear()
+
+    def GetPoseMatrices(self, i: int, subdivision:int, offset: glm.vec3, c:Component, size: int):
+        # Create vectors in a grid based on i index, with spacing
+        spacing = subdivision
+        vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
+        randomRotation = glm.vec3(-90, random.randint(0,360), 0)
+        scale = random.uniform(0.5,1.5)
+        randomScale = glm.vec3(scale, scale, scale)
+        maxOffset = spacing/2
+        randomOffset = glm.vec3(random.uniform(-maxOffset,maxOffset), 0, random.uniform(-maxOffset,maxOffset))
+        poseMtx = c.transform.GetPoseMatrix(translation=vec+randomOffset+offset, rotation=randomRotation, scale=randomScale)
+        return poseMtx
+
     def PassUniforms(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 3)
         shader.setInt("MAX_TESS_LEVEL", 64)
@@ -138,6 +253,9 @@ class TerrainMesh(Component):
         shader.setFloat("MIN_DISTANCE", 0)
         shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
         shader.setFloat("time", gametime.time)    
+
+    def PassUniformsTree(self, shader: Shader):
+        shader.setFloat("terrainscale", self.terrainScale)
 
     def GeneratePerlinNoise(self, pixelArray: pg.PixelArray, octaves: int = 1, persistence: float = 0.5, lacunarity: float = 2, seed: int = 1):
         scale = (pixelArray.surface.get_width(), pixelArray.surface.get_height())

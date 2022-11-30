@@ -24,6 +24,7 @@ from core.components.postprocessing import PostProcessing
 from core.component import Component
 from core.components.terrain import TerrainMesh
 import math
+import asyncio
 renderer:Runtime = Runtime()
 
 def GetPoseMatrices(i: int, c:Component, size: int):
@@ -52,7 +53,7 @@ def ConstructScene():
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
-    l.transform.position = glm.vec3(1,10,0)
+    l.transform.position = glm.vec3(10,10,0)
     #l.AddComponent(meshRenderer)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
@@ -88,8 +89,8 @@ def ConstructScene():
     testObj = Object("cube")
     meshRenderer = PRIMITIVE.CUBE()
     testObj.AddComponent(meshRenderer)
-    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
-    meshRenderer.mesh[0].IgnoreCameraDistance(False)
+    meshRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/blending_transparent_window.png"), specularTex=Texture("textures/blending_transparent_window.png")))
+    meshRenderer.meshes[0].IgnoreCameraDistance(False)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
@@ -98,20 +99,22 @@ def ConstructScene():
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(meshRenderer)
-    
+    print(">>>", testObj.FindComponentOfType(ModelRenderer))
     o =scene.Instantiate(testObj)
+    print(">>>", o.FindComponentOfType(ModelRenderer))
     o.transform.position = glm.vec3(3,7,2)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(0,4,1)
     
     modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
+    
     size = 200*200
-    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
+    modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
 
     testObj = Object("cube3")
     meshRenderer = PRIMITIVE.CUBE()
-    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
-    meshRenderer.mesh[0].IgnoreCameraDistance(False)
+    meshRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
+    meshRenderer.meshes[0].IgnoreCameraDistance(False)
     testObj.AddComponent(meshRenderer)
     
     o =scene.Instantiate(testObj)
@@ -132,10 +135,22 @@ def ConstructScene():
     # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
     # size = 20*20
     # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
+
+    # bagObjPrefab = Object("tree")
+    # modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
+    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    # bagObjPrefab.AddComponent(modelRenderer)
+    # bagObj = scene.Instantiate(bagObjPrefab)
+    # bagObj.transform.position = glm.vec3(0,1,0)
+    # bagObj.transform.scale = glm.vec3(1,1,1)
+    # bagObj.transform.rotation = glm.vec3(-90,0,0)
+    # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
+    # size = 20*20
+    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
     
     planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()
-    meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
+    meshRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = None, specularTex=None))
     planeObj.AddComponent(meshRenderer)
     o = scene.Instantiate(planeObj)
     
@@ -143,7 +158,7 @@ def ConstructScene():
     o.transform.scale = glm.vec3(21,20,20)
     
     terrainObj = Object("terrain")
-    terrainObj.AddComponent(TerrainMesh())
+    terrainObj.AddComponent(TerrainMesh(20))
     scene.Instantiate(terrainObj)
     
     return scene
@@ -199,6 +214,45 @@ def main():
     
     renderer.InitRuntime()
     renderer.Run()
+
+
+# def pygame_event_loop(loop, event_queue):
+#     while True:
+#         event = pg.event.wait()
+#         asyncio.run_coroutine_threadsafe(event_queue.put(event), loop=loop)
+
+# async def mainloop():
+#     current_time = 0
+#     while True:
+#         last_time, current_time = current_time, time.time()
+#         print(1/(current_time-last_time))
+        
+#         await asyncio.sleep(1 / 60 - (current_time - last_time))  # tick
+
+# async def sideloop():
+#     current_time = 0
+#     while True:
+#         last_time, current_time = current_time, time.time()
+        
+#         await asyncio.sleep(1 / 60 - (current_time - last_time))  # tick       
+
+# def loop():
+#     loop = asyncio.get_event_loop()
+#     event_queue = asyncio.Queue()
+
+#     pygame_task = loop.run_in_executor(None, pygame_event_loop, loop, event_queue)
+#     main_loop = asyncio.ensure_future(mainloop())
+#     side_loop = asyncio.ensure_future(sideloop())
+#     try:
+#         loop.run_forever()
+#     except KeyboardInterrupt:
+#         pass
+#     finally:
+#         pygame_task.cancel()
+#         main_loop.cancel()
+#         side_loop.cancel()
+
+#     pg.quit()
 
 if __name__ == "__main__":
     main()

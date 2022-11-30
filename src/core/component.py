@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Type, List
-
+import copy
 if TYPE_CHECKING:
     from scene import Scene
     from core.object import Object
@@ -25,6 +25,9 @@ class Component:
     def AddComponent(self, component: Component) -> Component:
         return self.parent.AddComponent(component)
     
+    def Copy(self) -> Component:
+        pass
+
     def Awake(self):
         pass
     
@@ -32,4 +35,7 @@ class Component:
         pass
     
     def Update(self):
+        pass
+
+    def OnDestroy(self):
         pass

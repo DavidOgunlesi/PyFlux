@@ -62,6 +62,15 @@ class PostProcessing(Component):
             shader.setInt("occulusionMap", 15)
             pass
         
+    def Copy(self) -> Component:
+        c = PostProcessing()
+        c.stack = self.stack
+        c.renderTextureMesh = self.renderTextureMesh
+        c.pingpongFboIDs = self.pingpongFboIDs
+        c.pingpongTextureIDs = self.pingpongTextureIDs
+        c.currPingPong = self.currPingPong
+        return c
+        
     def __init__(self):
         Component.__init__(self)
         self.stack: List[PostProcessing.Effect] = []
@@ -117,9 +126,9 @@ class PostProcessing(Component):
         renderTexObjInst = scene.Instantiate(renderTexObj) 
         renderTex = PRIMITIVE.QUAD()
         #renderTex.mesh[0].SetMaterial(Material(effect.shader))
-        renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-        renderTex.mesh[0].castShadows = False
-        renderTex.mesh[0].renderPass = False
+        renderTex.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
+        renderTex.meshes[0].castShadows = False
+        renderTex.meshes[0].renderPass = False
         renderTexObjInst.AddComponent(renderTex)
         
         
@@ -130,7 +139,7 @@ class PostProcessing(Component):
         self.pingpongFboIDs = [FBO, FBO2]
         self.pingpongTextureIDs = [tex, tex2]
         
-        self.renderTextureMesh = renderTex.mesh[0]
+        self.renderTextureMesh = renderTex.meshes[0]
     
     def useFBO(self):
         fboID = self.pingpongFboIDs[self.currPingPong]

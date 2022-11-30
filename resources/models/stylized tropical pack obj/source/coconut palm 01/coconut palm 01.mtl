@@ -1,0 +1,24 @@
+newmtl palm bark
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd palm bark.png
+
+newmtl palm leaf
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd palm leaf.png
+
+newmtl stem 01
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd stem 01.png
+
+newmtl coconut
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd coconut.png
+

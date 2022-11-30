@@ -4,6 +4,7 @@ from typing import List, TYPE_CHECKING
 from core.collections.mesh import MeshCollection
 from core.component import Component
 from core.components.mesh import Mesh
+from core.shader import Shader
 import numpy as np
 import glm
 
@@ -12,6 +13,16 @@ if TYPE_CHECKING:
     from core.object import Object
     from components.transform import Transform
 class ModelRenderer(Component):
+    def Copy(self) -> Component:
+
+        c = ModelRenderer(MeshCollection())
+
+        for mesh in self.meshCollection.meshes:
+            c.meshCollection.addMesh(mesh.Copy())
+
+        c.modelMatrices = self.modelMatrices
+        return c
+
     def __init__(self, meshes: MeshCollection):
         Component.__init__(self)
         self.meshCollection: MeshCollection = meshes
@@ -37,8 +48,20 @@ class ModelRenderer(Component):
         for mesh in self.meshCollection.meshes:
             mesh.Update()
     
+    def SetShader(self, shader:Shader):
+        for mesh in self.meshCollection.meshes:
+            mesh.SetShader(shader)
+
     @property
-    def mesh(self):
+    def materials(self):
+        return list(self.__getmaterials())
+
+    def __getmaterials(self):
+        for mesh in self.meshCollection.meshes:
+            yield mesh.material
+
+    @property
+    def meshes(self):
         return self.meshCollection.meshes
     
     def NormalizeMeshCentre(self):

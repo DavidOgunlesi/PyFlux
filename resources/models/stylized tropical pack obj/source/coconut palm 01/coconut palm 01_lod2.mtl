@@ -1,0 +1,12 @@
+newmtl stylized tropical 01
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd stylized tropical 01.png
+
+newmtl stylized tropical 02
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd stylized tropical 02.png
+

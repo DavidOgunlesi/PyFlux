@@ -84,11 +84,11 @@ void main(){
 
     // displace point along normal
     p += normal * Height;
-    FragPos = vec3(model * p);
+    FragPos = vec3(transpose(model) * p);
     Normal = vec3(normal);
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
     // ----------------------------------------------------------------------
     // output patch point position in clip space
-    gl_Position = projection * view * model * p;
+    gl_Position = projection * view * transpose(model) * p;
     
 }

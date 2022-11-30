@@ -6,11 +6,18 @@ from core.primitives import PRIMITIVE
 from core.shader import Shader
 from core.components.modelRenderer import ModelRenderer
 class SpriteRenderer(Component):
+    def Copy(self) -> Component:
+        c = SpriteRenderer()
+        c.texture = self.texture
+        c.color = self.color
+        c.modelRenderer = self.modelRenderer.Copy()
+        return c
+
     def __init__(self, texture: Texture = None):
         Component.__init__(self)
         self.texture = texture
         self.color = glm.vec4(1,1,1, 0.5)
-        self.modelRenderer = None
+        self.modelRenderer: ModelRenderer = None
     
     def Awake(self):
         from core.material import Material
@@ -19,8 +26,8 @@ class SpriteRenderer(Component):
         if not self.GetComponent(ModelRenderer):
             self.AddComponent(self.modelRenderer)
             
-        self.modelRenderer.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-        self.modelRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
+        self.modelRenderer.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
+        self.modelRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "sprite/unlit"), self.texture,  self.texture))
 
     def Update(self):
         self.LookAtCamera()
@@ -31,7 +38,7 @@ class SpriteRenderer(Component):
         self.transform.LookAt(self.scene.mainCamera.transform.position)
     
     def RenderSprite(self):
-        mesh:Mesh = self.GetComponent(ModelRenderer).mesh[0]
+        mesh:Mesh = self.GetComponent(ModelRenderer).meshes[0]
         mesh.material.shader.use()
         mesh.material.use()
         

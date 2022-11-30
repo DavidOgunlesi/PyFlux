@@ -1,0 +1,18 @@
+newmtl stem 01
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd stem 01.png
+
+newmtl banana leaf
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd banana leaf.png
+
+newmtl stem 02
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd stem 02.png
+

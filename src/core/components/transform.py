@@ -6,7 +6,13 @@ import math
 import numpy as np
 
 class Transform(Component):
-        
+    def Copy(self) -> Component:
+        c = Transform()
+        c.position = self.position
+        c.scale = self.scale
+        c._rotationMat4 = self._rotationMat4
+        c.pivot = self.pivot
+        return c
     def __init__(self):
         Component.__init__(self)
         self.position = glm.vec3(0, 0, 0)

@@ -6,6 +6,24 @@ from core.collections.mesh import MeshCollection
 from core.material import Material
 from core.shader import Shader
 from core.texture import Texture
+import os
+
+ # If file type isnt specified, it will try to load the file with the following extensions in order
+def ValidatePath(dir:str, path:str):
+    fileExtensions = [".obj",".fbx", ".blend",".3DS"]
+    # Check if the path is a valid file
+    if not os.path.isfile(path):
+        # Check try different path exntensions
+        for ext in fileExtensions:
+            if not path.endswith(ext):
+                # Check if file exists
+                if os.path.exists(f'{dir}{path}{ext}'):
+                    path += ext
+                    break
+            else:
+                break
+    return path
+
 class MeshLoader:
     
     process_flags = (
@@ -20,24 +38,27 @@ class MeshLoader:
         pass
     
     @classmethod
-    def Load(self, modelRootName, modelRootPath = "resources/models/") -> MeshCollection:
+    def Load(self, modelRootName, modelRootPath = "resources/") -> MeshCollection:
         path = f'{GetRootPathDir()}/{modelRootPath}{modelRootName}'
-        modelpath = f'{path}/source/model.obj'
-        scene = assimp_py.ImportFile(modelpath, self.process_flags)
         
-        return  MeshLoader.GetMeshCollection(scene, 
-            albedoTexture=Texture(f"models/{modelRootName}/textures/albedo"),
-            metallicTexture=Texture(f"models/{modelRootName}/textures/metallic"),
-            normalTexture=Texture(f"models/{modelRootName}/textures/normal"),
-            roughnessTexture=Texture(f"models/{modelRootName}/textures/roughness"),
-            aoTexture=Texture(f"models/{modelRootName}/textures/ao"),
-            emissiveTexture=Texture(f"models/{modelRootName}/textures/emissive"),
+        modelpath = ValidatePath(f'{path}/source/', 'model')
+        
+        scene = assimp_py.ImportFile(f'{path}/source/{modelpath}', self.process_flags)
+        
+        return  MeshLoader.GetMeshCollection(scene, modelRootName,
+            albedoTexture=Texture(f"{modelRootName}/textures/albedo"),
+            metallicTexture=Texture(f"{modelRootName}/textures/metallic"),
+            normalTexture=Texture(f"{modelRootName}/textures/normal"),
+            roughnessTexture=Texture(f"{modelRootName}/textures/roughness"),
+            aoTexture=Texture(f"{modelRootName}/textures/ao"),
+            emissiveTexture=Texture(f"{modelRootName}/textures/emissive"),
             )
     
     @classmethod
     def GetMeshCollection(
             self, 
             scene, 
+            modelRootName,
             albedoTexture:Texture = None, 
             normalTexture:Texture = None, 
             metallicTexture:Texture = None, 
@@ -71,7 +92,7 @@ class MeshLoader:
             # -- getting materials
             # mat is a dict consisting of assimp material properties
             mat = scene.materials[m.material_index]
-
+            #print(mat)
             # -- getting color
             diffuse_color = mat["COLOR_DIFFUSE"]
             """
@@ -93,7 +114,9 @@ class MeshLoader:
             # -- getting textures
             if mat["TEXTURES"]:
                 diffuse_tex = mat["TEXTURES"][assimp_py.TextureType_DIFFUSE]
-                   
+                path = diffuse_tex[0]
+                albedoTexture = Texture(f"{modelRootName}/textures/{path}")
+              
             mesh = Mesh(1,vertices=verts, triangles=indices,uvs=texcoords, normals=normals)
             mesh.SetCullMode(Mesh.CULLMODE.BACK)
             mesh.SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = albedoTexture, specularTex = metallicTexture))
