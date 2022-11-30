@@ -18,19 +18,16 @@ uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
 uniform float time;
 
-
 float snoise(vec2 v);
 vec3 permute(vec3 x);
 #define PI 3.14159265358979323846
 
-float random(vec2 p)
-{
-    vec2 K1 = vec2(
-        23.14069263277926, // e^pi (Gelfond's constant)
-        2.665144142690225 // 2^sqrt(2) (Gelfond–Schneider constant)
-    );
-    return fract( cos( dot(p,K1) ) * 12345.6789 );
+float random (in vec2 st) {
+    return fract(sin(dot(st.xy,
+                         vec2(12.9898,78.233)))*
+        43758.5453123);
 }
+
 
 void main()
 {
@@ -38,19 +35,24 @@ void main()
     mat4 modelMtx = transpose(modelInstanceMatrix);
     
     vec4 pos = vec4( aPos, 1.0); //vec4(aPos.x, y, aPos.z, 1.0);
+
+    //pos.y = sin(pos.y);
+
     gl_Position =  /*projection * view * modelMtx */ pos;
 
     FragPos = vec3(modelMtx * pos);
+
     ourColor = aColor;
     TexCoord = aTexCoord;
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
     
+
     //to do generate on CPU
     mat3 NormalMat = mat3(transpose(inverse(modelMtx)));
     Normal = NormalMat * aNorm;
-    Rotation = random(FragPos.xy+random(vec2(time)))*360;
+    
+    Perlin = snoise(pos.xz+time);
 
-    Perlin = snoise(pos.xz);
 }
 
 // Simplex 2D noise

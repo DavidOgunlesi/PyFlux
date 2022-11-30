@@ -26,6 +26,8 @@ class TerrainMesh(Component):
         Component.__init__(self)
         self.plane = None
         self.resolution = resolution
+        self.timeseed = gametime.time
+        self.waterPlane = None
         
     def Awake(self):
         pass
@@ -40,30 +42,52 @@ class TerrainMesh(Component):
         
         #heightmap = GeneratedTexture(width,height,pixelArray)
         heightmap = Texture('textures/temp2.png', colorMode="RGB",)
-        grass = Texture('textures/grass_seamless_texture_1392.jpg', colorMode="RGBA")
+        dirt = Texture('textures/grass_seamless_texture_1392.jpg', colorMode="RGBA")
+        dirtAlt = Texture('textures/jungle/dirt.jpg', colorMode="RGBA")
+        water = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
+        rock = Texture('textures/jungle/rock.jpg', colorMode="RGBA")
+        grass = Texture('textures/jungle/grass.jpg', colorMode="RGBA")
+        sand = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
         # Create Plane
-        planeObj = Object("plane")
+        planeObj = Object("terrrain plane")
+        
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
         meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
-        mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=grass, specularTex=grass)
+        mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=dirt, specularTex=rock)
 
         mat.SetTexture(heightmap, gl.GL_TEXTURE3)
+        mat.SetTexture(grass, gl.GL_TEXTURE4)
+        mat.SetTexture(sand, gl.GL_TEXTURE5)
+        mat.SetTexture(dirtAlt, gl.GL_TEXTURE6)
+        mat.SetTexture(water, gl.GL_TEXTURE7)
 
         meshRenderer.mesh[0].SetMaterial(mat)
         meshRenderer.mesh[0].SetUniformPasser(self.PassUniforms)
         planeObj.AddComponent(meshRenderer)
+
         self.plane = self.scene.Instantiate(planeObj)
-        self.transform.scale = glm.vec3(100,100,100)
+        self.plane.transform.scale = glm.vec3(100,100,100)
+
+        waterplaneObj = Object("water plane")
+        meshRenderer = self.GenerateMesh(width, height,  self.resolution)
+        gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
+        meshRenderer.mesh[0].SetDrawMode(Mesh.DrawMode.PATCHES)
+        mat = Material(Shader("env/water/vert", "env/water/frag",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/water/tess_eval"))
+
+        meshRenderer.mesh[0].SetMaterial(mat)
+        meshRenderer.mesh[0].SetUniformPasser(self.PassUniformsWater)
+        waterplaneObj.AddComponent(meshRenderer)
+
+        self.waterPlane = self.scene.Instantiate(waterplaneObj)
+        self.waterPlane.transform.scale = glm.vec3(100,100,100)
+        self.waterPlane.transform.position = glm.vec3(0,1473,0)
 
     def Update(self):
-        self.plane.transform.position = self.transform.position
-        self.plane.transform.rotation = self.transform.rotation
-        self.plane.transform.scale = self.transform.scale
         if input.GetKeyPressed(pg.K_UP):
-            self.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
+            self.waterPlane.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
 
     def GenerateMesh(self, width, height, resolution):
         rez = resolution
@@ -106,6 +130,14 @@ class TerrainMesh(Component):
         shader.setInt("MAX_TESS_LEVEL", 64)
         shader.setFloat("MIN_DISTANCE", 0)
         shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
+        shader.setFloat("time", self.timeseed)
+
+    def PassUniformsWater(self, shader: Shader):
+        shader.setInt("MIN_TESS_LEVEL", 3)
+        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setFloat("MIN_DISTANCE", 0)
+        shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
+        shader.setFloat("time", gametime.time)    
 
     def GeneratePerlinNoise(self, pixelArray: pg.PixelArray, octaves: int = 1, persistence: float = 0.5, lacunarity: float = 2, seed: int = 1):
         scale = (pixelArray.surface.get_width(), pixelArray.surface.get_height())

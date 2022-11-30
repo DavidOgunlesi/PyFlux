@@ -131,32 +131,9 @@ void main()
 
     vec3 R = envReflect;
     R *= vec3(1, -1, 1);
-
-    float h = (Height + 16)/64.0f;
-	vec4 heightCol = vec4(h, h, h, 1.0);
-    
-    const int numberOfTextures = 6;
-    // Colors from blue to yellow to green to brown to gray to white
-                            // water,                      sand,                       grass,                        dirt,                       rock,                   snow
-    vec4 colors[numberOfTextures] = vec4[numberOfTextures](vec4(0.32, 0.33, 0.19, 1.0), vec4(0.58, 0.53, 0.27, 1.0), vec4(0.38, 0.45, 0.23, 1.0), vec4(0.25, 0.21, 0.11, 1) , vec4(0.5, 0.5, 0.5, 1.0), vec4(0.9, 0.9, 0.9, 1.0));
-    //vec2 normTexCoord = 400 * TexCoord;// 400  rotateUV(TexCoord, Rotation);
-    vec2 Resolution = vec2(400, 400);
-    // convert degrees to radians
-    float angle = (Rotation * 3.14159265) / 180.0;
-    float sin_factor = sin(angle);
-    float cos_factor = cos(angle);
-    vec2 uv = TexCoord + vec2(Perlin/1000, Perlin/1000);
-    // clamp to [0, 1]
-    uv = clamp(uv, 0.0, 1.0);
-    vec2 normTexCoord = 400 * uv * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
-
-    
-
-    vec4 colors2[numberOfTextures] = vec4[numberOfTextures](texture(waterTexture, normTexCoord), texture(sandTexture, normTexCoord), texture(grassTexture, normTexCoord),texture(dirtTexture, normTexCoord), texture(material.specular, normTexCoord), texture(material.specular, normTexCoord));
-    float locations[numberOfTextures] = float[numberOfTextures](0.1, 0.11, 0.12, 0.26, 0.5, 0.63);
-    vec4 color = LinearGradient(h, colors, locations);
-    vec4 color2 = LinearGradient(h, colors2, locations);
-    gl_FragColor = color2 * color;
+    vec4 skyboxContribution = vec4(texture(skybox, R).rgb, 1.0) * (1-dot(norm, viewDir));
+    gl_FragColor = vec4(0.2,0.2,1,(1-dot(viewDir, norm))*0.9) + vec4(0,0,0,0.8);
+    gl_FragColor = mix(gl_FragColor, skyboxContribution, 0.5);
 } 
 
 

@@ -18,6 +18,7 @@ out vec4 FragPosLightSpace;
 out float Rotation;
 // send to Fragment Shader for coloring
 out float Height;
+out float Perlin;
 
 layout (binding = 3) uniform sampler2D heightMap;
 uniform mat4 model;
@@ -53,20 +54,17 @@ void main(){
     float pn0 = (pn01 - pn00) * u + pn00;
     float pn1 = (pn11 - pn10) * u + pn10;
     float finalPerlin = (pn1 - pn0) * v + pn0;
-
+    Perlin = finalPerlin;
     // bilinearly interpolate rotation noises across patch
     // retrieve control point texture coordinates
-    float r00 = Rotation_[0];
-    float r01 = Rotation_[1];
-    float r10 = Rotation_[2];
-    float r11 = Rotation_[3];
-    float r0 = (r01 - r00) * u + r00;
-    float r1 = (r11 - r10) * u + r10;
     Rotation = Rotation_[0];
 
     // lookup texel at patch coordinate for height and scale + shift as desired
-    Height = texture(heightMap, texCoord).y * 64.0 - 16.0;
-
+    Height = (texture(heightMap, texCoord).y/2) * 64.0 - 16.0;
+    // Ramp values below a certain height down
+    if (Height < 10.0) {
+        Height = Height * 1.5;
+    }
     // ----------------------------------------------------------------------
     // retrieve control point position coordinates
     vec4 p00 = gl_in[0].gl_Position;
