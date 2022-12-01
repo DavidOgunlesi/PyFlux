@@ -38,6 +38,7 @@ class TerrainMesh(Component):
         c.treeChunks = self.treeChunks
         c.chunkNum = self.chunkNum
         c.heightmap = self.heightmap
+        c.slopemap = self.slopemap
         c.width = self.width
         c.height = self.height
         c.treePrefab = self.treePrefab.Copy()
@@ -54,6 +55,7 @@ class TerrainMesh(Component):
         self.treeChunks: Dict[Tuple[int, int], ModelRenderer] = {}
         self.chunkNum = 1000
         self.heightmap = None
+        self.slopemap = None
         self.width = 0
         self.height = 0
         self.treePrefab = Object("tree")
@@ -73,13 +75,15 @@ class TerrainMesh(Component):
         # pg.image.save(pixelArray.surface,'temp.jpeg')
         
         #heightmap = GeneratedTexture(width,height,pixelArray)
-        heightmap = Texture('textures/temp2.png', colorMode="RGB",)
+        heightmap = Texture('textures/terrain/heightmap.png', colorMode="RGB",)
+        self.slopemap = Texture('textures/terrain/slopemap.png', colorMode="RGB",)
         dirt = Texture('textures/grass_seamless_texture_1392.jpg', colorMode="RGBA")
         dirtAlt = Texture('textures/jungle/dirt.jpg', colorMode="RGBA")
         water = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
         rock = Texture('textures/jungle/rock.jpg', colorMode="RGBA")
         grass = Texture('textures/jungle/grass.jpg', colorMode="RGBA")
         sand = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
+        grassBladeTexture = Texture('textures/jungle/grassBlade.jpg', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
         scale = 100
@@ -89,16 +93,19 @@ class TerrainMesh(Component):
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
         meshRenderer.meshes[0].SetDrawMode(Mesh.DrawMode.PATCHES)
-        mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=dirt, specularTex=rock)
+        mat = Material(Shader("env/terrain/vert", "env/terrain/basic_lit",tessControlShaderName="env/terrain/tess_cont", geomShaderName="env/terrain/geom", tessEvalShaderName="env/terrain/tess_eval"), diffuseTex=dirt, specularTex=rock)
 
         mat.SetTexture(heightmap, gl.GL_TEXTURE3)
         mat.SetTexture(grass, gl.GL_TEXTURE4)
         mat.SetTexture(sand, gl.GL_TEXTURE5)
         mat.SetTexture(dirtAlt, gl.GL_TEXTURE6)
         mat.SetTexture(water, gl.GL_TEXTURE7)
-
+        mat.SetTexture(self.slopemap, gl.GL_TEXTURE8)
+        mat.SetTexture(grassBladeTexture, gl.GL_TEXTURE9)
         meshRenderer.meshes[0].SetMaterial(mat)
+        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrain/vert", "env/lightmap/null_frag", geomShaderName="env/terrain/geom", tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval_lightmap"))
         meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrain)
+        meshRenderer.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
         planeObj.AddComponent(meshRenderer)
 
         self.plane = self.scene.Instantiate(planeObj)
@@ -111,6 +118,7 @@ class TerrainMesh(Component):
         mat = Material(Shader("env/water/vert", "env/water/frag",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/water/tess_eval"))
 
         meshRenderer.meshes[0].SetMaterial(mat)
+        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/water/vert", "env/lightmap/null_frag",tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/water/tess_eval_lightmap"))
         meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsWater)
         waterplaneObj.AddComponent(meshRenderer)
 
@@ -130,9 +138,9 @@ class TerrainMesh(Component):
         self.modelMatrices = [self.GetPoseMatrices(i,self.subdivision, self.modelRenderer.meshes[0], size) for i in range(size)]
 
     def Update(self):
-        chunkSize = self.terrainScale / self.chunkNum
-        if self.scene.mainCamera.transform.position.y * chunkSize < 8:
-            self.UpdateChunks()
+        # chunkSize = self.terrainScale / self.chunkNum
+        # if self.scene.mainCamera.transform.position.y * chunkSize < 8:
+        #     self.UpdateChunks()
 
         self.PreChunks()
         if input.GetKeyPressed(pg.K_UP):
@@ -147,6 +155,7 @@ class TerrainMesh(Component):
                 if (chunkX, chunkZ) not in self.treeChunks:
                     self.GenerateFoliage(chunkX, chunkZ)
                     pass
+                
 
         # remove chunks that are too far away
         destoryBuffer = []
@@ -232,6 +241,7 @@ class TerrainMesh(Component):
 
             for material in modelRenderer.materials:
                 material.SetTexture(self.heightmap, gl.GL_TEXTURE3)
+                material.SetTexture(self.slopemap, gl.GL_TEXTURE4)
 
             modelRenderer.modelMatrices = self.modelMatrices
         self.pretreeChunks.clear()
@@ -252,15 +262,17 @@ class TerrainMesh(Component):
         return mat4Arr
 
     def PassUniformsTerrain(self, shader: Shader):
-        shader.setInt("MIN_TESS_LEVEL", 3)
-        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setInt("MIN_TESS_LEVEL", 1)
+        shader.setInt("MAX_TESS_LEVEL", 64*2)
         shader.setFloat("MIN_DISTANCE", 0)
-        shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
+        shader.setFloat("MAX_DISTANCE", 380 * self.transform.scale.x)
         shader.setFloat("time", self.timeseed)
+        shader.setFloat("gametime", gametime.time)
+        shader.setFloat("terrainscale", self.terrainScale)
         shader.setInt("terrainTiling", 4000)
 
     def PassUniformsWater(self, shader: Shader):
-        shader.setInt("MIN_TESS_LEVEL", 3)
+        shader.setInt("MIN_TESS_LEVEL", 1)
         shader.setInt("MAX_TESS_LEVEL", 64)
         shader.setFloat("MIN_DISTANCE", 0)
         shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)

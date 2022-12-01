@@ -1,14 +1,16 @@
 #version 440 core
 
-in vec3 FragPos;
-in vec3 ourColor;
-in vec2 TexCoord;
-in vec3 Normal;
-in vec4 FragPosLightSpace;
+in vec3 FragPos_;
+in vec3 ourColor_;
+in vec2 TexCoord_;
+in vec3 Normal_;
+in vec4 FragPosLightSpace_;
 
-in float Height;
-in float Rotation;
-in float Perlin;
+in float Height_;
+in float Rotation_;
+in float Perlin_;
+in float isGrass_;
+in vec4 ColorVariation_;
 uniform vec3 cameraPos;
 
 struct DirLight {
@@ -72,13 +74,15 @@ layout (binding = 4) uniform sampler2D grassTexture;
 layout (binding = 5) uniform sampler2D sandTexture;
 layout (binding = 6) uniform sampler2D dirtTexture;
 layout (binding = 7) uniform sampler2D waterTexture;
+layout (binding = 8) uniform sampler2D slopeMap;
+layout (binding = 9) uniform sampler2D grassBladeTexture;
 
 float ShadowCalculation(DirLight light, vec3 normal, vec4 fragPosLightSpace);
 float CalculateSpecComponent(vec3 lightDir, vec3 normal, vec3 viewDir);
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow);  
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow);  
-vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow);  
-
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow, vec4 diffuseCol);  
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow, vec4 diffuseCol);  
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow, vec4 diffuseCol);  
+vec4 GetTerrainColor(vec3 norm, vec3 viewDir, float shadow);
 
 vec4 LinearGradient(float value, vec4[6] colors, float[6] locations) {
     if (value <= locations[0]) {
@@ -89,28 +93,41 @@ vec4 LinearGradient(float value, vec4[6] colors, float[6] locations) {
     }
     for (int i = 0; i < locations.length() - 1; i++) {
         if (value >= locations[i] && value <= locations[i + 1]) {
-            float t = (value - locations[i]) / (locations[i + 1] - locations[i]) + Perlin/10;
+            float t = (value - locations[i]) / (locations[i + 1] - locations[i]) + Perlin_/10;
             return mix(colors[i], colors[i + 1], t);
         }
     }
     return vec4(0.0, 0.0, 0.0, 1.0);
 }
 
+float random(vec2 p)
+{
+    vec2 K1 = vec2(
+        23.14069263277926, // e^pi (Gelfond's constant)
+        2.665144142690225 // 2^sqrt(2) (Gelfond–Schneider constant)
+    );
+    return fract( cos( dot(p,K1) ) * 12345.6789 );
+}
+
 
 void main()
 {
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(cameraPos - FragPos);
+    vec3 norm = normalize(Normal_);
+    vec3 viewDir = normalize(cameraPos - FragPos_);
     //Shadow
-    float shadow = ShadowCalculation(dirLight, norm, FragPosLightSpace); 
+    float shadow = ShadowCalculation(dirLight, norm, FragPosLightSpace_); 
+
+    vec4 terrainColor = GetTerrainColor(norm, viewDir, shadow);
+
+
     // phase 1: Directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir, shadow);
+    vec3 finalTerrainColor = CalcDirLight(dirLight, norm, viewDir, shadow, terrainColor);
     // phase 2: Point lights
     for(int i = 0; i < NR_POINT_LIGHTS; i++){   
         if (pointLights[i].set == false){
             continue;
         }else{
-            result += CalcPointLight(pointLights[i], norm, FragPos, viewDir, shadow);    
+            finalTerrainColor += CalcPointLight(pointLights[i], norm, FragPos_, viewDir, shadow, terrainColor);    
         } 
     }   
     // phase 3: Spot lights
@@ -118,11 +135,36 @@ void main()
         if (spotLights[i].set == false){
             continue;
         }else{
-            result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir, shadow);
+            finalTerrainColor += CalcSpotLight(spotLights[i], norm, FragPos_, viewDir, shadow, terrainColor);
         }
     }
-    vec4 tex = texture(material.diffuse, TexCoord);
+    
+    vec4 grassColor = texture(grassBladeTexture, TexCoord_) * ColorVariation_;
+    // phase 1: Directional lighting
+    vec3 finalGrassColor = CalcDirLight(dirLight, norm, viewDir, shadow, grassColor);
+    // phase 2: Point lights
+    for(int i = 0; i < NR_POINT_LIGHTS; i++){   
+        if (pointLights[i].set == false){
+            continue;
+        }else{
+            finalGrassColor += CalcPointLight(pointLights[i], norm, FragPos_, viewDir, shadow, grassColor);    
+        } 
+    }   
+    // phase 3: Spot lights
+    for(int i = 0; i < NR_SPOT_LIGHTS; i++){
+        if (spotLights[i].set == false){
+            continue;
+        }else{
+            finalGrassColor += CalcSpotLight(spotLights[i], norm, FragPos_, viewDir, shadow, grassColor);
+        }
+    }
 
+    
+    gl_FragColor = vec4(mix(finalTerrainColor, finalGrassColor, isGrass_),1);
+    
+} 
+
+vec4 GetTerrainColor(vec3 norm, vec3 viewDir, float shadow){
     // Environment mapping
     vec3 envReflect = reflect(viewDir, norm);
 
@@ -133,20 +175,20 @@ void main()
     vec3 R = envReflect;
     R *= vec3(1, -1, 1);
 
-    float h = (Height + 16)/64.0f;
+    float h = (Height_ + 16)/64.0f;
 	vec4 heightCol = vec4(h, h, h, 1.0);
     
     const int numberOfTextures = 6;
     // Colors from blue to yellow to green to brown to gray to white
                             // water,                      sand,                       grass,                        dirt,                       rock,                   snow
     vec4 colors[numberOfTextures] = vec4[numberOfTextures](vec4(0.32, 0.33, 0.19, 1.0), vec4(0.58, 0.53, 0.27, 1.0), vec4(0.38, 0.45, 0.23, 1.0), vec4(0.25, 0.21, 0.11, 1) , vec4(0.5, 0.5, 0.5, 1.0), vec4(0.9, 0.9, 0.9, 1.0));
-    //vec2 normTexCoord = 400 * TexCoord;// 400  rotateUV(TexCoord, Rotation);
+    //vec2 normTexCoord = 400 * TexCoord;// 400  rotateUV(TexCoord, Rotation_);
     vec2 Resolution = vec2(400, 400);
     // convert degrees to radians
-    float angle = (Rotation * 3.14159265) / 180.0;
+    float angle = (Rotation_ * 3.14159265) / 180.0;
     float sin_factor = sin(angle);
     float cos_factor = cos(angle);
-    vec2 uv = TexCoord + vec2(Perlin/1000, Perlin/1000);
+    vec2 uv = TexCoord_ + vec2(Perlin_/1000, Perlin_/1000);
     // clamp to [0, 1]
     uv = clamp(uv, 0.0, 1.0);
     vec2 normTexCoord = terrainTiling * uv * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
@@ -157,9 +199,19 @@ void main()
     float locations[numberOfTextures] = float[numberOfTextures](0.1, 0.11, 0.12, 0.26, 0.5, 0.63);
     vec4 color = LinearGradient(h, colors, locations);
     vec4 color2 = LinearGradient(h, colors2, locations);
-    gl_FragColor = color2 * color * (heightCol + vec4(0,0, 0.2-heightCol.z,1)) * ( (1.0 - shadow));
-} 
+    vec4 col = color2 * color * ( (1.0 - shadow));//(heightCol + vec4(0,0, 0.2-heightCol.z,1))
 
+    float slope = (texture(slopeMap, TexCoord_+Perlin_/300).y/2);
+    //if slope is too steep, don't render
+    float slopeVal = length(slope);
+    vec4 slopeCol = vec4(slopeVal, slopeVal, slopeVal, 1.0);
+    vec4 underWater = vec4(1-slopeVal/2, 1-slopeVal/2, 1-slopeVal/2, 1.0);
+    //underWater = max(underWater, 0.2);
+
+    vec4 terrainColor = (col + clamp(col*underWater, 0.0, 1.0));
+
+    return terrainColor;
+}
 
 
 float ShadowCalculation(DirLight light, vec3 normal, vec4 fragPosLightSpace){
@@ -206,7 +258,7 @@ float CalculateSpecComponent(vec3 lightDir, vec3 normal, vec3 viewDir){
    return spec;
 }
 
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow){
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow, vec4 diffuseCol){
     // diffuse 
     vec3 lightDir = normalize(light.direction);
     float diff = max(dot(normal, lightDir), 0.0);
@@ -217,14 +269,14 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, float shadow){
     float spec = CalculateSpecComponent(lightDir, normal, viewDir);
 
     // Combine
-    vec3 ambient  = light.ambient * vec3(texture(material.diffuse, TexCoord));
-    vec3 diffuse  = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord)); 
+    vec3 ambient  = light.ambient * vec3(diffuseCol);
+    vec3 diffuse  = light.diffuse * diff * vec3(diffuseCol); 
+    //vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoord_)); 
 
-    return (ambient + (1.0 - shadow) * (diffuse + specular));
+    return (ambient + (1.0 - shadow) * (diffuse));
 }
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow, vec4 diffuseCol){
     vec3 lightDir = normalize(light.position - fragPos);
 
     // diffuse 
@@ -237,18 +289,18 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, f
     float dist    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
-    vec3 specular = light.specular * (spec *  vec3(texture(material.specular, TexCoord)));  
+    vec3 ambient = light.ambient * vec3(diffuseCol);
+    vec3 diffuse = light.diffuse * diff * vec3(diffuseCol); 
+    //vec3 specular = light.specular * (spec *  vec3(texture(material.specular, TexCoord_)));  
     
     ambient  *= attenuation; 
     diffuse  *= attenuation;
-    specular *= attenuation; 
+    //specular *= attenuation; 
 
-    return  (ambient + (1.0 - shadow) * (diffuse + specular));
+    return  (ambient + (1.0 - shadow) * (diffuse));
 }
 
-vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow){
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, float shadow, vec4 diffuseCol){
     
     // diffuse 
     vec3 lightDir = normalize(light.position - fragPos);
@@ -267,16 +319,16 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, flo
     float epsilon   = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0); 
     
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoord));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoord)); 
-    vec3 specular = light.specular * (spec *  vec3(texture(material.specular, TexCoord))); 
+    vec3 ambient = light.ambient * vec3(diffuseCol);
+    vec3 diffuse = light.diffuse * diff * vec3(diffuseCol); 
+    //vec3 specular = light.specular * (spec *  vec3(texture(material.specular, TexCoord_))); 
 
     ambient  *= attenuation; 
     diffuse  *= attenuation;
-    specular *= attenuation; 
+    //specular *= attenuation; 
 
     diffuse  *= intensity;
-    specular *= intensity; 
+    //specular *= intensity; 
 
-   return  (ambient + (1.0 - shadow) * (diffuse + specular));
+   return  (ambient + (1.0 - shadow) * (diffuse));
 }

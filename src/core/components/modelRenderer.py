@@ -37,11 +37,13 @@ class ModelRenderer(Component):
         for mesh in self.meshCollection.meshes:
             mesh.Awake()
             mesh.modelMatrices = self.modelMatrices
+            mesh.transform = self.transform
         self.NormalizeMeshCentre()
         
     def Start(self):
         for mesh in self.meshCollection.meshes:
             mesh.Start()
+            mesh.transform = self.transform
         self.NormalizeMeshCentre()
             
     def Update(self):

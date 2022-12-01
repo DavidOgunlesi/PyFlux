@@ -17,12 +17,11 @@ class SpriteRenderer(Component):
         Component.__init__(self)
         self.texture = texture
         self.color = glm.vec4(1,1,1, 0.5)
-        self.modelRenderer: ModelRenderer = None
+        self.modelRenderer = PRIMITIVE.QUAD()
     
     def Awake(self):
         from core.material import Material
         
-        self.modelRenderer = PRIMITIVE.QUAD()
         if not self.GetComponent(ModelRenderer):
             self.AddComponent(self.modelRenderer)
             

@@ -89,7 +89,9 @@ void main(){
     Normal = vec3(normal);
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
     // ----------------------------------------------------------------------
-    // output patch point position
-    gl_Position = p;
+    // output patch point position in clip space
+
+
+    gl_Position = lightSpaceMatrix * transpose(model) * p;
     
 }

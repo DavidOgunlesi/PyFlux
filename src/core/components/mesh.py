@@ -15,10 +15,11 @@ import core.globals as GLOBAL
 import core.constants as const
 
 from typing import TYPE_CHECKING, Callable
+from core.shader import Shader
 if TYPE_CHECKING:
     from core.material import Material
     from core.runtime import Runtime
-    from core.shader import Shader
+    
     from core.texture import Texture
     
 class Mesh(Component):
@@ -53,6 +54,7 @@ class Mesh(Component):
         c.calculateNormals = self.calculateNormals
         c.vertexData = self.vertexData
         c.faceData = self.faceData
+        c.shadowPassShader = self.shadowPassShader
         return c
 
     def __init__(self, type: int, **kwargs):
@@ -72,6 +74,7 @@ class Mesh(Component):
         self.modelMatrices = []
         self.drawMode = Mesh.DrawMode.TRIANGLES
         self.__passUniforms: Callable = None
+        self.shadowPassShader = None
         if "calculateNormals" in kwargs:
             self.calculateNormals = kwargs["calculateNormals"]
         else:
@@ -118,6 +121,8 @@ class Mesh(Component):
     def Start(self):
         if self.VAO == None:
             self.VAO, self.IVA = self.GenerateVAO()
+        if self.shadowPassShader == None:
+            self.shadowPassShader = Shader("env/lightmap/simpledepth_vert","env/lightmap/null_frag")
         return super().Start()
     
     def Update(self):
@@ -125,6 +130,10 @@ class Mesh(Component):
     
     def SetShader(self, shader:Shader):
         self.material.shader = shader
+
+    # TODO: Generalise to all passes, pass enum as parameter
+    def SetShadowPassShader(self, shader:Shader):
+        self.shadowPassShader = shader
 
     def SetDrawMode(self, mode: Mesh.DrawMode):
         self.drawMode = mode
@@ -331,9 +340,7 @@ class Mesh(Component):
         self.__passUniforms = uniformPasser
 
     def RenderInstanced(self, shadowMap=0):
-        
         # Update model matrix if we are only rendering one instance
-       
         if len(self.modelMatrices) == 1: 
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.IVA)
             self.modelMatrices.clear()
@@ -344,8 +351,8 @@ class Mesh(Component):
         # Render as per normal
         mat = self.material
         shader = None
-        if GLOBAL.GLOBAL_RENDERSHADER:
-            shader = GLOBAL.GLOBAL_RENDERSHADER
+        if  GLOBAL.GLOBAL_RENDERSHADER != None:
+            shader = self.shadowPassShader
             shader.use()
             mat.use()
         else: 
