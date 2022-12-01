@@ -158,7 +158,7 @@ def ConstructScene():
     o.transform.scale = glm.vec3(21,20,20)
     
     terrainObj = Object("terrain")
-    terrainObj.AddComponent(TerrainMesh())
+    terrainObj.AddComponent(TerrainMesh(90))
     scene.Instantiate(terrainObj)
     
     return scene

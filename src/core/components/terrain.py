@@ -111,6 +111,30 @@ class TerrainMesh(Component):
         self.plane = self.scene.Instantiate(planeObj)
         self.plane.transform.scale = glm.vec3(scale,scale,scale)
 
+         # Create Plane
+        treeFoliage = Object("terrrain plane")
+        
+        meshRenderer = self.GenerateMesh(width, height,  self.resolution)
+        gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
+        meshRenderer.meshes[0].SetDrawMode(Mesh.DrawMode.PATCHES)
+        mat = Material(Shader("env/terrainTrees/vert", "env/terrainTrees/basic_lit",tessControlShaderName="env/terrainTrees/tess_cont", geomShaderName="env/terrainTrees/geom", tessEvalShaderName="env/terrainTrees/tess_eval"), diffuseTex=dirt, specularTex=rock)
+
+        mat.SetTexture(heightmap, gl.GL_TEXTURE3)
+        mat.SetTexture(grass, gl.GL_TEXTURE4)
+        mat.SetTexture(sand, gl.GL_TEXTURE5)
+        mat.SetTexture(dirtAlt, gl.GL_TEXTURE6)
+        mat.SetTexture(water, gl.GL_TEXTURE7)
+        mat.SetTexture(self.slopemap, gl.GL_TEXTURE8)
+        mat.SetTexture(grassBladeTexture, gl.GL_TEXTURE9)
+        meshRenderer.meshes[0].SetMaterial(mat)
+        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrainTrees/vert", "env/lightmap/null_frag", geomShaderName="env/terrainTrees/geom", tessControlShaderName="env/terrainTrees/tess_cont", tessEvalShaderName="env/terrainTrees/tess_eval_lightmap"))
+        meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrainTrees)
+        meshRenderer.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
+        treeFoliage.AddComponent(meshRenderer)
+
+        treeFoliageInst = self.scene.Instantiate(treeFoliage)
+        treeFoliageInst.transform.scale = glm.vec3(scale,scale,scale)
+
         waterplaneObj = Object("water plane")
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
@@ -263,9 +287,19 @@ class TerrainMesh(Component):
 
     def PassUniformsTerrain(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 1)
-        shader.setInt("MAX_TESS_LEVEL", 64*2)
-        shader.setFloat("MIN_DISTANCE", 0)
-        shader.setFloat("MAX_DISTANCE", 380 * self.transform.scale.x)
+        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setFloat("MIN_DISTANCE", 100)
+        shader.setFloat("MAX_DISTANCE", 3080)
+        shader.setFloat("time", self.timeseed)
+        shader.setFloat("gametime", gametime.time)
+        shader.setFloat("terrainscale", self.terrainScale)
+        shader.setInt("terrainTiling", 4000)
+
+    def PassUniformsTerrainTrees(self, shader: Shader):
+        shader.setInt("MIN_TESS_LEVEL", 1)
+        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setFloat("MIN_DISTANCE", 100)
+        shader.setFloat("MAX_DISTANCE", 10800)
         shader.setFloat("time", self.timeseed)
         shader.setFloat("gametime", gametime.time)
         shader.setFloat("terrainscale", self.terrainScale)
@@ -274,8 +308,8 @@ class TerrainMesh(Component):
     def PassUniformsWater(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 1)
         shader.setInt("MAX_TESS_LEVEL", 64)
-        shader.setFloat("MIN_DISTANCE", 0)
-        shader.setFloat("MAX_DISTANCE", 3800 * self.transform.scale.x)
+        shader.setFloat("MIN_DISTANCE", 100)
+        shader.setFloat("MAX_DISTANCE", 1000 * self.transform.scale.x)
         shader.setFloat("time", gametime.time)    
 
     def PassUniformsTree(self, shader: Shader):

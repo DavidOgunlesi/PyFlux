@@ -32,11 +32,11 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform float gametime;
-
+uniform vec3 cameraPos;
 uniform float terrainscale;
 layout (binding = 8) uniform sampler2D slopeMap;
 
-const float MAGNITUDE = 0.6;
+const float TREESCALE = 2;
 #define PI 3.1415926535897932384626433832795
 vec4 lerp (vec4 a, vec4 b, float t)
 {
@@ -92,40 +92,75 @@ float snoise(vec2 v){
   return 130.0 * dot(m, g);
 }
 
-void CreateGrass(float seed){
+mat4 rotate(float angle, vec3 v)
+{
+    v = normalize(v);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat4(oc * v.x * v.x + c, oc * v.x * v.y - v.z * s, oc * v.z * v.x + v.y * s, 0.0,
+                oc * v.x * v.y + v.z * s, oc * v.y * v.y + c, oc * v.y * v.z - v.x * s, 0.0,
+                oc * v.z * v.x - v.y * s, oc * v.y * v.z + v.x * s, oc * v.z * v.z + c, 0.0,
+                0.0, 0.0, 0.0, 1.0);
+}
+
+vec4 LookAt(vec3 point, vec4 pos){
+        vec3 dir = normalize(point - ((model) * (gl_in[0].gl_Position + pos)).xyz);
+        vec3 up = -sign(dir.z) * vec3(0,1,0);
+        vec3 right = sign(dir.z) * vec3(1,0,0);
+        vec3 rotation = vec3(dot(up, dir)*90,dot(right, dir)*90,0);
+        mat4 rotMat = mat4(1.0);
+        rotMat = rotate(radians(-   rotation.y), vec3(0,1,0));
+        return rotMat * pos;
+}
+
+void GenerateTreeQuad(){
     //Find centre of patch
     vec4 centre = vec4(0.0);
     for (int i = 0; i<gl_in.length(); i++)
     {
-        centre += gl_in[i].gl_Position;
+        centre += (model) * gl_in[i].gl_Position;
     }
     centre /= gl_in.length();
 
-    float randomNum = random(centre.xy+seed);
+    float randomNum = random(centre.xy);
+    vec2 coord = ((centre).xz-vec2(terrainscale/2,terrainscale/2))/terrainscale;
+    
+    
 
-    vec2[3] grassTexCoords = vec2[3](vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 0.0));
-
+    vec2[6] treeTexCoords = vec2[6](vec2(0.0, 0.0), vec2(0, 1.0), vec2(1.0, 1.0),vec2(0.0, 0.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
+    vec2[6] treeVerts = vec2[6](vec2(-1, 0.0), vec2(-1, 2), vec2(1.0, 2),vec2(-1, 0.0), vec2(1.0, 2), vec2(1.0, 0.0));
     vec4 offset = vec4(randomNum, 0 ,randomNum, 0);
-    for (int i = 0; i < gl_in.length(); i++)
+    for (int i = 0; i < treeVerts.length(); i++)
     {
-        TexCoord_ = grassTexCoords[i];
-        FragPos_ = FragPos[i];
-        Normal_ = Normal[i];
-        FragPosLightSpace_ = FragPosLightSpace[i];
-        Perlin_ = Perlin[i];
-        Rotation_ = Rotation[i];
-        Height_ = Height[i];
+        TexCoord_ = treeTexCoords[i];
+        FragPos_ = FragPos[i % 3];
+        Normal_ = Normal[i % 3];
+        FragPosLightSpace_ = FragPosLightSpace[i % 3];
+        Perlin_ = Perlin[i % 3];
+        Rotation_ = Rotation[i % 3];
+        Height_ = Height[i % 3];
         isGrass_ = 1;
-        vec2 coord = (((model) * gl_in[0].gl_Position).xz-vec2(terrainscale/2,terrainscale/2))/terrainscale;
-        float h = Height[i];
+        if (!(int(centre.x) % 10 == 0 && int(centre.z) % 10 == 0)){
+            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            EmitVertex();
+            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            EmitVertex();
+            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            EmitVertex();
+            EndPrimitive();
+            return;
+        }
+        float h = Height[i % 3];
         h = (h+ 16.0) / 64.0;
         float range = snoise(coord)/100;
-        if (h > 0.26+range || h < 0.12+range)
+        if (h > 0.30+range || h < 0.10+range)
          {
              break;
         }
        
-        vec2 slope = (texture(slopeMap, coord+snoise(coord+seed)/6).xy/2);
+        vec2 slope = (texture(slopeMap, coord+snoise(coord)/6).xy/2);
         //if slope is too steep, don't render
         float slopeVal = length(slope);
         if (slopeVal < 0.5+snoise(coord)/4){
@@ -133,27 +168,31 @@ void CreateGrass(float seed){
         }
 
         //Ofset the vertex by the centre
-        gl_Position = lerp(gl_in[i].gl_Position, centre, lerpFloat(0.5,0.7,randomNum)) + offset;
+        //gl_Position = vec4(treeVerts[i], 0, 0);//lerp(gl_in[i].gl_Position, centre, lerpFloat(0.5,0.7,randomNum)) + offset;
 
         // offset by 1 if we are middle vertex
-        if ((i+1)%gl_in.length() == 0){
-            gl_Position = (gl_Position+ vec4(0, (randomNum+1)/1.5, 0, 0) * MAGNITUDE);
-            // offset by noise depending on height
-            float off = snoise(((model) * gl_Position).xz + gametime+seed);
-            off = off/10;
-            gl_Position = gl_Position + vec4(off, 0, off, 0);
-        }else{
-            gl_Position = gl_Position;
-        }
-
-        gl_Position = projection * view * (model) * gl_Position;
+        // if ((i+1)%gl_in.length() == 0){
+        //     gl_Position = (gl_Position+ vec4(0, (randomNum+1)/1.5, 0, 0) * MAGNITUDE);
+        //     // offset by noise depending on height
+        //     float off = snoise(((model) * gl_Position).xz + gametime+seed);
+        //     off = off/10;
+        //     gl_Position = gl_Position + vec4(off, 0, off, 0);
+        // }else{
+        //     gl_Position = gl_Position;
+        // } [col][row]
+        vec4 lp = (vec4(treeVerts[i], 0, 0)*TREESCALE);
+        vec4 pos = LookAt(cameraPos, lp);
+        gl_Position = projection * view *  (model) * (gl_in[0].gl_Position +vec4(pos.xyz, lp.w));
         
         // Add color variation 
-        ColorVariation_ = vec4(random((coord+snoise(coord+seed)))/3, random((coord+snoise(coord+seed)))/3, 0, 1.0);
+        ColorVariation_ = vec4(random((coord+snoise(coord)))/3, random((coord+snoise(coord)))/3, 0, 1.0);
 
         EmitVertex();
+
+        if ((i+1) % 3 == 0){
+            EndPrimitive();
+        }
     }
-    EndPrimitive();
 }
 
 void Cylinder(){
@@ -187,24 +226,10 @@ void trunk(float size, int depth){
 void main()
 {
     isGrass_ = 0;
-    for (int i = 0; i<gl_in.length(); i++)
-    {
-        TexCoord_ = TexCoord[i];
-        FragPos_ = FragPos[i];
-        Normal_ = Normal[i];
-        FragPosLightSpace_ = FragPosLightSpace[i];
-        Perlin_ = Perlin[i];
-        Rotation_ = Rotation[i];
-        Height_ = Height[i];
-        gl_Position = projection * view * (model) * gl_in[i].gl_Position;
-        EmitVertex();
-    }
-
-    EndPrimitive();
     int density = 1;
     for (int i = 0; i<density; i++) 
     {
-        CreateGrass(1000*i);
+        GenerateTreeQuad();
     }
     
 }
