@@ -32,7 +32,9 @@ def GetPoseMatrices(i: int, c:Component, size: int):
     spacing = 3
     vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
     poseMtx = c.transform.GetPoseMatrix(translation=vec)
-    return poseMtx
+    mat4Arr = np.array(poseMtx, dtype=np.float32)
+    mat4Arr = mat4Arr.flatten()
+    return mat4Arr
 
 def ConstructScene():
     scene = Scene()
@@ -144,9 +146,10 @@ def ConstructScene():
     # bagObj.transform.position = glm.vec3(0,1,0)
     # bagObj.transform.scale = glm.vec3(1,1,1)
     # bagObj.transform.rotation = glm.vec3(-90,0,0)
+    # modelRenderer.meshes[0].SetShader(Shader("env/tree/vertex", "fragment"))
     # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
     # size = 20*20
-    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
+    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
     
     planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()

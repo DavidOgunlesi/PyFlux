@@ -10,15 +10,20 @@ in vec4 FragPosLightSpace_[];
 in mat4 model_[];
 in float Perlin_[];
 in float Rotation_[];
+in float Random_[];
+
 out vec3 FragPos;
 out vec3 ourColor;
 out vec2 TexCoord;
 out vec3 Normal;
 out vec4 FragPosLightSpace;
 out float Rotation;
+out float Random;
 // send to Fragment Shader for coloring
 out float Height;
 out float Perlin;
+
+
 
 layout (binding = 3) uniform sampler2D heightMap;
 uniform mat4 model;
@@ -27,6 +32,7 @@ uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
 
 void main(){
+    Random = Random_[0];
     // get patch coordinate
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
@@ -85,7 +91,7 @@ void main(){
     // displace point along normal
     p += normal;// * Height;
     p += vec4(0, Height, 0, 0);
-    FragPos = vec3(transpose(model) * p);
+    FragPos = vec3(model * p);
     Normal = vec3(normal);
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
     // ----------------------------------------------------------------------

@@ -12,7 +12,7 @@ out vec3 Normal;
 out vec4 FragPosLightSpace;
 out float Perlin;
 out float Rotation;
-
+out float Random;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
@@ -51,6 +51,7 @@ void main()
     Rotation = random(FragPos.xy+random(vec2(time)))*360;
 
     Perlin = snoise(pos.xz);
+    Random = random(vec2(random(FragPos.xy+random(vec2(time))+time+Perlin), time));
 }
 
 // Simplex 2D noise

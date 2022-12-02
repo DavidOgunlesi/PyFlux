@@ -26,7 +26,9 @@ out float Rotation_;
 in float Height[];
 out float Height_;
 
-out float isGrass_;
+in float Random[];
+out float Random_;
+
 out vec4 ColorVariation_;
 uniform mat4 model;
 uniform mat4 view;
@@ -123,8 +125,9 @@ void GenerateTreeQuad(){
         centre += (model) * gl_in[i].gl_Position;
     }
     centre /= gl_in.length();
-
+    
     float randomNum = random(centre.xy);
+    float type = int(randomNum*6);
     vec2 coord = ((centre).xz-vec2(terrainscale/2,terrainscale/2))/terrainscale;
     
     
@@ -141,13 +144,13 @@ void GenerateTreeQuad(){
         Perlin_ = Perlin[i % 3];
         Rotation_ = Rotation[i % 3];
         Height_ = Height[i % 3];
-        isGrass_ = 1;
+        Random_ = Random[i % 3];
         if (!(int(centre.x) % 10 == 0 && int(centre.z) % 10 == 0)){
-            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            //gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
             EmitVertex();
-            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            //gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
             EmitVertex();
-            gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
+            //gl_Position = projection * view * (model) *(gl_in[i % 3].gl_Position);
             EmitVertex();
             EndPrimitive();
             return;
@@ -155,7 +158,7 @@ void GenerateTreeQuad(){
         float h = Height[i % 3];
         h = (h+ 16.0) / 64.0;
         float range = snoise(coord)/100;
-        if (h > 0.30+range || h < 0.10+range)
+        if (h > 0.23+range || h < 0.13+range)
          {
              break;
         }
@@ -183,7 +186,6 @@ void GenerateTreeQuad(){
         vec4 lp = (vec4(treeVerts[i], 0, 0)*TREESCALE);
         vec4 pos = LookAt(cameraPos, lp);
         gl_Position = projection * view *  (model) * (gl_in[0].gl_Position +vec4(pos.xyz, lp.w));
-        
         // Add color variation 
         ColorVariation_ = vec4(random((coord+snoise(coord)))/3, random((coord+snoise(coord)))/3, 0, 1.0);
 
@@ -225,7 +227,6 @@ void trunk(float size, int depth){
 
 void main()
 {
-    isGrass_ = 0;
     int density = 1;
     for (int i = 0; i<density; i++) 
     {

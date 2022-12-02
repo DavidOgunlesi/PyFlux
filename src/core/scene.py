@@ -25,7 +25,7 @@ class Scene:
     def Instantiate(self, obj: Object) -> Object:
         return self.InstantiateOnThread(obj, None)
 
-    def InstantiateThreaded(self, obj: Object, callback:Callable) -> Object:
+    def InstantiateThreaded(self, obj: Object, callback:Callable = None) -> Object:
         start = time.time()
         x = threading.Thread(target=self.InstantiateOnThread, args=(obj,callback))
         x.start()

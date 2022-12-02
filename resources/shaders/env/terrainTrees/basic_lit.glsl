@@ -9,8 +9,8 @@ in vec4 FragPosLightSpace_;
 in float Height_;
 in float Rotation_;
 in float Perlin_;
-in float isGrass_;
 in vec4 ColorVariation_;
+in float Random_;
 uniform vec3 cameraPos;
 
 struct DirLight {
@@ -70,12 +70,13 @@ uniform samplerCube skybox;
 uniform sampler2D shadowMap;
 uniform int terrainTiling;
 
-layout (binding = 4) uniform sampler2D grassTexture;
-layout (binding = 5) uniform sampler2D sandTexture;
-layout (binding = 6) uniform sampler2D dirtTexture;
-layout (binding = 7) uniform sampler2D waterTexture;
-layout (binding = 8) uniform sampler2D slopeMap;
-layout (binding = 9) uniform sampler2D grassBladeTexture;
+layout (binding = 20) uniform sampler2D tree0;
+layout (binding = 21) uniform sampler2D tree1;
+layout (binding = 22) uniform sampler2D tree2;
+layout (binding = 23) uniform sampler2D tree3;
+layout (binding = 24) uniform sampler2D tree4;
+layout (binding = 25) uniform sampler2D tree5;
+layout (binding = 26) uniform sampler2D tree6;
 
 float ShadowCalculation(DirLight light, vec3 normal, vec4 fragPosLightSpace);
 float CalculateSpecComponent(vec3 lightDir, vec3 normal, vec3 viewDir);
@@ -116,30 +117,35 @@ void main()
     vec3 viewDir = normalize(cameraPos - FragPos_);
     //Shadow
     float shadow = ShadowCalculation(dirLight, norm, FragPosLightSpace_); 
-
-    vec4 terrainColor = GetTerrainColor(norm, viewDir, shadow);
-
-
-    // phase 1: Directional lighting
-    vec3 finalTerrainColor = CalcDirLight(dirLight, norm, viewDir, shadow, terrainColor);
-    // phase 2: Point lights
-    for(int i = 0; i < NR_POINT_LIGHTS; i++){   
-        if (pointLights[i].set == false){
-            continue;
-        }else{
-            finalTerrainColor += CalcPointLight(pointLights[i], norm, FragPos_, viewDir, shadow, terrainColor);    
-        } 
-    }   
-    // phase 3: Spot lights
-    for(int i = 0; i < NR_SPOT_LIGHTS; i++){
-        if (spotLights[i].set == false){
-            continue;
-        }else{
-            finalTerrainColor += CalcSpotLight(spotLights[i], norm, FragPos_, viewDir, shadow, terrainColor);
-        }
+    vec4 texColor = vec4(1.0, 1.0, 1.0, 1.0);
+    float num = clamp(Random_*Perlin_*6, 0, 6);
+    if (int(num) == 0){
+        texColor = texture(tree0, -TexCoord_);
     }
-    
-    vec4 grassColor = texture(grassBladeTexture, TexCoord_) * ColorVariation_;
+    else if (int(num)== 1){
+        texColor = texture(tree1, -TexCoord_);
+    }
+    else if (int(num) == 2){
+        texColor = texture(tree2, -TexCoord_);
+    }
+    else if (int(num) == 3){
+        texColor = texture(tree3, -TexCoord_);
+    }
+    else if (int(num) == 4){
+        texColor = texture(tree4, -TexCoord_);
+    }
+    else if (int(num) == 5){
+        texColor = texture(tree5, -TexCoord_);
+    }
+    else if (int(num) == 6){
+        texColor = texture(tree6, -TexCoord_);
+    }
+    if (texColor.a <= 0.5) {
+        discard;
+    }
+
+    //int(6*random(treePos_.xz))
+    vec4 grassColor = texColor * ColorVariation_;
     // phase 1: Directional lighting
     vec3 finalGrassColor = CalcDirLight(dirLight, norm, viewDir, shadow, grassColor);
     // phase 2: Point lights
@@ -159,59 +165,9 @@ void main()
         }
     }
 
-    
-    gl_FragColor = vec4(TexCoord_, 0 , 1);//vec4(mix(finalTerrainColor, finalGrassColor, isGrass_),1);
+    gl_FragColor = vec4(finalGrassColor,1);//vec4(mix(finalTerrainColor, finalGrassColor, isGrass_),1);
     
 } 
-
-vec4 GetTerrainColor(vec3 norm, vec3 viewDir, float shadow){
-    // Environment mapping
-    vec3 envReflect = reflect(viewDir, norm);
-
-    //Refraction
-    float ratio = 1.00 / 4.52;
-    vec3 envRefract = refract(viewDir, norm, ratio);
-
-    vec3 R = envReflect;
-    R *= vec3(1, -1, 1);
-
-    float h = (Height_ + 16)/64.0f;
-	vec4 heightCol = vec4(h, h, h, 1.0);
-    
-    const int numberOfTextures = 6;
-    // Colors from blue to yellow to green to brown to gray to white
-                            // water,                      sand,                       grass,                        dirt,                       rock,                   snow
-    vec4 colors[numberOfTextures] = vec4[numberOfTextures](vec4(0.32, 0.33, 0.19, 1.0), vec4(0.58, 0.53, 0.27, 1.0), vec4(0.38, 0.45, 0.23, 1.0), vec4(0.25, 0.21, 0.11, 1) , vec4(0.5, 0.5, 0.5, 1.0), vec4(0.9, 0.9, 0.9, 1.0));
-    //vec2 normTexCoord = 400 * TexCoord;// 400  rotateUV(TexCoord, Rotation_);
-    vec2 Resolution = vec2(400, 400);
-    // convert degrees to radians
-    float angle = (Rotation_ * 3.14159265) / 180.0;
-    float sin_factor = sin(angle);
-    float cos_factor = cos(angle);
-    vec2 uv = TexCoord_ + vec2(Perlin_/1000, Perlin_/1000);
-    // clamp to [0, 1]
-    uv = clamp(uv, 0.0, 1.0);
-    vec2 normTexCoord = terrainTiling * uv * mat2(cos_factor, sin_factor, -sin_factor, cos_factor);
-
-    
-
-    vec4 colors2[numberOfTextures] = vec4[numberOfTextures](texture(waterTexture, normTexCoord), texture(sandTexture, normTexCoord), texture(grassTexture, normTexCoord),texture(dirtTexture, normTexCoord), texture(material.specular, normTexCoord), texture(material.specular, normTexCoord));
-    float locations[numberOfTextures] = float[numberOfTextures](0.1, 0.11, 0.12, 0.26, 0.5, 0.63);
-    vec4 color = LinearGradient(h, colors, locations);
-    vec4 color2 = LinearGradient(h, colors2, locations);
-    vec4 col = color2 * color * ( (1.0 - shadow));//(heightCol + vec4(0,0, 0.2-heightCol.z,1))
-
-    float slope = (texture(slopeMap, TexCoord_+Perlin_/300).y/2);
-    //if slope is too steep, don't render
-    float slopeVal = length(slope);
-    vec4 slopeCol = vec4(slopeVal, slopeVal, slopeVal, 1.0);
-    vec4 underWater = vec4(1-slopeVal/2, 1-slopeVal/2, 1-slopeVal/2, 1.0);
-    //underWater = max(underWater, 0.2);
-
-    vec4 terrainColor = (col + clamp(col*underWater, 0.0, 1.0));
-
-    return terrainColor;
-}
 
 
 float ShadowCalculation(DirLight light, vec3 normal, vec4 fragPosLightSpace){

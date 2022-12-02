@@ -58,9 +58,11 @@ class TerrainMesh(Component):
         self.slopemap = None
         self.width = 0
         self.height = 0
-        self.treePrefab = Object("tree")
+        self.treePrefab = Object("tree!!")
         self.modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
+        self.modelRenderer.SetShader(Shader("env/tree/vertex", "fragment"))
         self.treePrefab.AddComponent(self.modelRenderer)
+        
         #for mesh in self.modelRenderer.meshes:
             #mesh.VAO, mesh.IVA = mesh.GenerateVAO()
 
@@ -84,6 +86,13 @@ class TerrainMesh(Component):
         grass = Texture('textures/jungle/grass.jpg', colorMode="RGBA")
         sand = Texture('textures/jungle/sand.jpg', colorMode="RGBA")
         grassBladeTexture = Texture('textures/jungle/grassBlade.jpg', colorMode="RGBA")
+        tree0 = Texture('textures/trees/treesSprite_00.png', colorMode="RGBA")
+        tree1 = Texture('textures/trees/treesSprite_01.png', colorMode="RGBA")
+        tree2 = Texture('textures/trees/treesSprite_02.png', colorMode="RGBA")
+        tree3 = Texture('textures/trees/treesSprite_03.png', colorMode="RGBA")
+        tree4 = Texture('textures/trees/treesSprite_04.png', colorMode="RGBA")
+        tree5 = Texture('textures/trees/treesSprite_05.png', colorMode="RGBA")
+        tree6 = Texture('textures/trees/treesSprite_06.png', colorMode="RGBA")
         width = heightmap.width
         height = heightmap.height
         scale = 100
@@ -112,7 +121,7 @@ class TerrainMesh(Component):
         self.plane.transform.scale = glm.vec3(scale,scale,scale)
 
          # Create Plane
-        treeFoliage = Object("terrrain plane")
+        treeFoliage = Object("tree plane")
         
         meshRenderer = self.GenerateMesh(width, height,  self.resolution)
         gl.glPatchParameteri(gl.GL_PATCH_VERTICES, 4)
@@ -120,12 +129,14 @@ class TerrainMesh(Component):
         mat = Material(Shader("env/terrainTrees/vert", "env/terrainTrees/basic_lit",tessControlShaderName="env/terrainTrees/tess_cont", geomShaderName="env/terrainTrees/geom", tessEvalShaderName="env/terrainTrees/tess_eval"), diffuseTex=dirt, specularTex=rock)
 
         mat.SetTexture(heightmap, gl.GL_TEXTURE3)
-        mat.SetTexture(grass, gl.GL_TEXTURE4)
-        mat.SetTexture(sand, gl.GL_TEXTURE5)
-        mat.SetTexture(dirtAlt, gl.GL_TEXTURE6)
-        mat.SetTexture(water, gl.GL_TEXTURE7)
         mat.SetTexture(self.slopemap, gl.GL_TEXTURE8)
-        mat.SetTexture(grassBladeTexture, gl.GL_TEXTURE9)
+        mat.SetTexture(tree0, gl.GL_TEXTURE20)
+        mat.SetTexture(tree1, gl.GL_TEXTURE21)
+        mat.SetTexture(tree2, gl.GL_TEXTURE22)
+        mat.SetTexture(tree3, gl.GL_TEXTURE23)
+        mat.SetTexture(tree4, gl.GL_TEXTURE24)
+        mat.SetTexture(tree5, gl.GL_TEXTURE25)
+        mat.SetTexture(tree6, gl.GL_TEXTURE26)
         meshRenderer.meshes[0].SetMaterial(mat)
         meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrainTrees/vert", "env/lightmap/null_frag", geomShaderName="env/terrainTrees/geom", tessControlShaderName="env/terrainTrees/tess_cont", tessEvalShaderName="env/terrainTrees/tess_eval_lightmap"))
         meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrainTrees)
@@ -162,11 +173,12 @@ class TerrainMesh(Component):
         self.modelMatrices = [self.GetPoseMatrices(i,self.subdivision, self.modelRenderer.meshes[0], size) for i in range(size)]
 
     def Update(self):
+        # Cunked Trees broke for whatever reason so I'm just going to use instanced trees for now o(≧口≦)o
         # chunkSize = self.terrainScale / self.chunkNum
         # if self.scene.mainCamera.transform.position.y * chunkSize < 8:
-        #     self.UpdateChunks()
+        #      self.UpdateChunks()
 
-        self.PreChunks()
+        # self.PreChunks()
         if input.GetKeyPressed(pg.K_UP):
             self.waterPlane.transform.position += glm.vec3(0,100,0) * gametime.deltaTime
 
@@ -251,14 +263,13 @@ class TerrainMesh(Component):
 
     def PreChunks(self):
         for chunkX, chunkZ in self.pretreeChunks:
-            
             inst = self.pretreeChunks[(chunkX, chunkZ)]
             self.treeChunks[(chunkX, chunkZ)] = inst
 
             x, z = self.ChunkToPosition(chunkX, chunkZ)
             inst.transform.position = glm.vec3(x, 100, z)
             modelRenderer: ModelRenderer = inst.FindComponentOfType(ModelRenderer)
-            modelRenderer.SetShader(Shader("env/tree/vertex", "fragment"))
+            
             
             for mesh in modelRenderer.meshes:
                 mesh.SetUniformPasser(self.PassUniformsTree)
@@ -266,8 +277,9 @@ class TerrainMesh(Component):
             for material in modelRenderer.materials:
                 material.SetTexture(self.heightmap, gl.GL_TEXTURE3)
                 material.SetTexture(self.slopemap, gl.GL_TEXTURE4)
-
+            
             modelRenderer.modelMatrices = self.modelMatrices
+
         self.pretreeChunks.clear()
 
     def GetPoseMatrices(self, i: int, subdivision:int, c:Component, size: int):
@@ -286,7 +298,7 @@ class TerrainMesh(Component):
         return mat4Arr
 
     def PassUniformsTerrain(self, shader: Shader):
-        shader.setInt("MIN_TESS_LEVEL", 1)
+        shader.setInt("MIN_TESS_LEVEL", 16)
         shader.setInt("MAX_TESS_LEVEL", 64)
         shader.setFloat("MIN_DISTANCE", 100)
         shader.setFloat("MAX_DISTANCE", 3080)
@@ -298,12 +310,14 @@ class TerrainMesh(Component):
     def PassUniformsTerrainTrees(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 1)
         shader.setInt("MAX_TESS_LEVEL", 64)
-        shader.setFloat("MIN_DISTANCE", 100)
+        shader.setFloat("MIN_DISTANCE", 0)
         shader.setFloat("MAX_DISTANCE", 10800)
         shader.setFloat("time", self.timeseed)
         shader.setFloat("gametime", gametime.time)
         shader.setFloat("terrainscale", self.terrainScale)
         shader.setInt("terrainTiling", 4000)
+        #for idx in range(7):
+        #    shader.setInt(f"treeTextures[{idx}]", 20+idx)
 
     def PassUniformsWater(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 1)

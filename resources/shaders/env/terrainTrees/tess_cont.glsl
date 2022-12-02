@@ -12,6 +12,9 @@ out vec3 Normal_[];
 in vec4 FragPosLightSpace[];
 out vec4 FragPosLightSpace_[];
 
+in float Random[];
+out float Random_[];
+
 in float Perlin[];
 out float Perlin_[];
 in float Rotation[];
@@ -38,6 +41,7 @@ void main()
     FragPosLightSpace_[gl_InvocationID] = FragPosLightSpace[gl_InvocationID];
     Perlin_[gl_InvocationID] = Perlin[gl_InvocationID];
     Rotation_[gl_InvocationID] = Rotation[gl_InvocationID];
+    Random_[gl_InvocationID] = Random[gl_InvocationID];
     // ----------------------------------------------------------------------
     // invocation zero controls tessellation levels for the entire patch
     if (gl_InvocationID == 0)
