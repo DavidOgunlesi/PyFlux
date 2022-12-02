@@ -21,7 +21,8 @@ if TYPE_CHECKING:
     from core.runtime import Runtime
     
     from core.texture import Texture
-    
+import copy
+
 class Mesh(Component):
     
     class CULLMODE:
@@ -40,11 +41,11 @@ class Mesh(Component):
         c.VAO = self.VAO
         c.material = self.material
         c.IVA = self.IVA
-        c.offset = self.offset
+        c.offset = copy.copy(self.offset)
         c.cullMode = self.cullMode
         c.writeDepthMask = self.writeDepthMask
         c.viewMtxOverride = self.viewMtxOverride
-        c.viewMtxOverrideValue = self.viewMtxOverrideValue
+        c.viewMtxOverrideValue = copy.copy(self.viewMtxOverrideValue)
         c.doViewSorting = self.doViewSorting
         c.castShadows = self.castShadows
         c.renderPass = self.renderPass

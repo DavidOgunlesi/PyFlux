@@ -39,5 +39,8 @@ class Component:
     def Update(self):
         pass
 
+    def LateUpdate(self):
+        pass
+
     def OnDestroy(self):
         pass

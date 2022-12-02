@@ -36,9 +36,8 @@ class Scene:
         obj2 = obj.Copy()
         obj2.Initialise(self)
         self.__objects.append(obj2)
-        if self.initialised:
-            for component in obj2.components:
-                self.QueueComponentSetup(component)
+        for component in obj2.components:
+            self.QueueComponentSetup(component)
 
         if callback != None:
             callback(obj2)
@@ -54,9 +53,14 @@ class Scene:
             print("Main Camera not set, scene disabled")
             return
         for obj in self.__objects:
+            print("Awaking object", obj.name)
             obj.SetupComponents()
         for obj in self.__objects:
+            if not obj.awake:
+                continue
+            print("Starting object", obj.name)
             obj.InitialiseComponents()
+        print("/////////////////////////////////Scene started////////////////////////////////")
         self.initialised = True
             
     def UpdateScene(self):
@@ -64,12 +68,17 @@ class Scene:
             print("Main Camera not set, scene disabled")
             return
         for component in self.__componentsToSetup:
-            component.Awake()
-            component.Start()
+            if not component.parent.awake:
+                component.Awake()
+            if not component.parent.started:
+                component.Start()
         self.__componentsToSetup.clear()
 
         for obj in self.__objects:
             obj.UpdateComponents()
+
+        for obj in self.__objects:
+            obj.LateUpdateComponents()
         
     
     def GetMeshes(self):

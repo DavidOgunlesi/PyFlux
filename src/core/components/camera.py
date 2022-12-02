@@ -14,18 +14,18 @@ import math
 import core.gametime as gm
 import core.input as input
 from core.components.transform import Transform
-
+import copy
 class Camera(Component):
     def Copy(self) -> Component:
         c = Camera()
-        c.viewMatrix = self.viewMatrix
+        c.viewMatrix = copy.copy(self.viewMatrix)
         c.projection = self.projection
         c.cameraSpeed = self.cameraSpeed
         c.sensitivity = self.sensitivity
         c.yaw = self.yaw
         c.pitch = self.pitch
-        c.cameraFront = self.cameraFront
-        c.cameraUp = self.cameraUp
+        c.cameraFront = copy.copy(self.cameraFront)
+        c.cameraUp = copy.copy(self.cameraUp)
         c.fov = self.fov
         c.zoomFactor = self.zoomFactor
         c.zoomSpeed = self.zoomSpeed
@@ -58,6 +58,8 @@ class Camera(Component):
         self.bottom: float = 0
         self.top:float = 6
         self.projType = 0
+        self.prevPosition = glm.vec3(0,0,0)
+        self.clock = 0
         
     def Start(self):
         self.transform.position = glm.vec3(0, 0, -5)
@@ -71,9 +73,18 @@ class Camera(Component):
             
         self.DoCameraMovement()
         self.DoMouseLook()
-        self.DoCameraZoom()
+        self.DoCameraSpeedScroll()
         self.viewMatrix = self.GetViewMatrix()
-    
+        
+
+    def LateUpdate(self):
+        self.prevPosition = copy.copy(self.transform.position)
+
+       
+    @property
+    def velocity(self):
+        return self.transform.position - self.prevPosition
+
     def DoMouseLook(self):
         x,y = pg.mouse.get_rel()
         
@@ -96,9 +107,9 @@ class Camera(Component):
         direction.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
         self.cameraFront = glm.normalize(direction)
     
-    def DoCameraZoom(self):
+    def DoCameraSpeedScroll(self):
         _,sy = input.GetMouseWheel()
-        self.cameraSpeed += sy * self.cameraSpeed * gm.deltaTime * 100
+        self.cameraSpeed += sy * self.cameraSpeed/3 * gm.deltaTime * 100
         self.cameraSpeed = min(max(self.cameraSpeed, 1), 10000)
     
     def DoCameraMovement(self):

@@ -4,14 +4,15 @@ from core.component import Component
 import glm
 import math
 import numpy as np
-
+import copy
 class Transform(Component):
     def Copy(self) -> Component:
         c = Transform()
-        c.position = self.position
-        c.scale = self.scale
-        c._rotationMat4 = self._rotationMat4
-        c.pivot = self.pivot
+        c.position = copy.copy(self.position)
+        c.scale = copy.copy(self.scale)
+        c._rotationMat4 = copy.copy(self._rotationMat4)
+        c.pivot = copy.copy(self.pivot)
+        c.prevPosition = copy.copy(self.prevPosition)
         return c
     def __init__(self):
         Component.__init__(self)
@@ -19,11 +20,12 @@ class Transform(Component):
         self.scale = glm.vec3(1,1,1)
         self._rotationMat4 = glm.mat4(1)
         self.pivot = glm.vec3(0, 0, 0)
-        
+        self.prevPosition = glm.vec3(0, 0, 0)
+    
     @property
     def rotation(self):
         return glm.degrees(glm.eulerAngles(glm.quat_cast(self._rotationMat4)))
-    
+
     @rotation.setter
     def rotation(self, rotation):
         rotationQuat = glm.quat(glm.radians(rotation))

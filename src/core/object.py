@@ -12,6 +12,8 @@ class Object:
         self.components.append(self.transform)
         self.scene = None
         self.name = name
+        self.awake = False
+        self.started = False
     
     def Initialise(self, scene: Scene):
         self.scene = scene
@@ -19,17 +21,23 @@ class Object:
             component.Init(parent = self, scene = self.scene, transform = self.transform)
             
     def SetupComponents(self):
+        self.awake = True
         for component in self.components:
             component.Awake()
     
     def InitialiseComponents(self):
+        self.started = True
         for component in self.components:
             component.Start()
     
     def UpdateComponents(self):
         for component in self.components:
             component.Update()
-            
+
+    def LateUpdateComponents(self):
+        for component in self.components:
+            component.LateUpdate()
+
     def AddComponent(self, component: Component):
         self.components.append(component)
         component.Init(parent = self, scene = self.scene, transform = self.transform)
@@ -58,6 +66,7 @@ class Object:
         
         for component in self.components:
             newObj.components.append(component.Copy())
-        newObj.transform = newObj.FindComponentOfType(Transform)
+        #print("Copied object: ", self.components , newObj.components)
+        newObj.transform = self.transform.Copy()
         newObj.name = self.name
         return newObj

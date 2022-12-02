@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from scene import Scene
     from core.object import Object
     from components.transform import Transform
+
+import copy
 class ModelRenderer(Component):
     def Copy(self) -> Component:
 
@@ -20,7 +22,7 @@ class ModelRenderer(Component):
         for mesh in self.meshCollection.meshes:
             c.meshCollection.addMesh(mesh.Copy())
     
-        c.modelMatrices = self.modelMatrices
+        c.modelMatrices = copy.deepcopy(self.modelMatrices)
         return c
 
     def __init__(self, meshes: MeshCollection):
@@ -49,6 +51,10 @@ class ModelRenderer(Component):
     def Update(self):
         for mesh in self.meshCollection.meshes:
             mesh.Update()
+
+    def LateUpdate(self):
+        for mesh in self.meshCollection.meshes:
+            mesh.LateUpdate()
     
     def SetShader(self, shader:Shader):
         for mesh in self.meshCollection.meshes:

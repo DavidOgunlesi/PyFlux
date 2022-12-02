@@ -5,10 +5,7 @@ import glm
 from core.components.sprite import SpriteRenderer
 from core.texture import Texture
 import random
-if TYPE_CHECKING:
-    from scene import Scene
-    from core.object import Object
-    from components.transform import Transform
+from core.object import Object
 
 class Boid(Component):
 
@@ -38,11 +35,12 @@ class Boid(Component):
         self.sprite = "textures/bird.png"
         self.initialDirection = glm.vec3(0, 0, 0)
         self.viewAngle = 100
+        self.currentDirection = glm.vec3(0, 0, 0)
         
     def Awake(self):
         if not self.GetComponent(SpriteRenderer):
             self.AddComponent(SpriteRenderer(Texture(self.sprite)))
-        pass
+        
     
     def Start(self):
         self.currentDirection = glm.vec3(random.randint(-1, 1), random.randint(-1, 1), random.randint(-1, 1))
@@ -52,7 +50,6 @@ class Boid(Component):
         sprR.modelRenderer.meshes[0].castShadows = False
         Boid.global_boids.append(self)
         self.transform.scale = glm.vec3(4.5, 4.5, 4.5)
-        self.transform.position += glm.vec3(random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100))
     
     def Update(self):
         ###############################################################################
@@ -79,6 +76,9 @@ class Boid(Component):
         self.currentDirection = glm.clamp(self.currentDirection, 0, Boid.Max_Velocity)
 
         # Update position
+        if glm.isnan(self.currentDirection.x) or glm.isnan(self.currentDirection.y) or glm.isnan(self.currentDirection.z):
+            self.currentDirection = glm.vec3(0, 0, 0)
+
         self.transform.position += self.currentDirection
     
     def angleBetween(self, a: glm.vec3 ,b : glm.vec3, origin : glm.vec3):
@@ -146,3 +146,60 @@ class Boid(Component):
             sumDirection += neighbour.currentDirection
 
         return glm.normalize(sumDirection)
+
+
+class DynamicBoidManager(Component):
+    instance: DynamicBoidManager = None
+    def Copy(self) -> Component:
+        c = DynamicBoidManager(self.minBoidCount, self.maxBoidCount)
+        c.boidPrefab = self.boidPrefab
+        return c
+
+    def __init__(self, minBoidCount = 20, maxBoidCount = 50):
+        Component.__init__(self)
+        self.minBoidCount = minBoidCount
+        self.maxBoidCount = maxBoidCount
+        birdBoid = Object("bird boid")
+        birdBoid.AddComponent(Boid())
+        self.boidPrefab = birdBoid
+        self.currentBoids: List[Object] = []
+
+    def Awake(self):
+        if DynamicBoidManager.instance == None:
+            DynamicBoidManager.instance = self
+            print("DynamicBoidManager instance created")
+        else:
+            print("DynamicBoidManager instance already exists")
+            self.parent.Destroy()
+
+    def Start(self):
+        self.CreateBoidAtCamera()
+
+    def Update(self):
+        centre = glm.vec3(0, 0, 0)
+        if len(self.currentBoids) > 0:
+            for boid in self.currentBoids:
+                centre += boid.transform.position
+            centre /= len(self.currentBoids)
+
+        deleteBuffer = []
+        for boid in self.currentBoids:
+            if glm.distance(boid.transform.position, self.scene.mainCamera.transform.position) > 1000:
+                    boid.Destroy()
+                    deleteBuffer.append(boid)
+
+        for boid in deleteBuffer:
+            self.currentBoids.remove(boid)
+
+        if glm.length(self.scene.mainCamera.velocity) < 50:
+            self.CreateBoidAtCamera()
+
+    
+    def CreateBoidAtCamera(self):
+        cameraPos = self.scene.mainCamera.transform.position
+        for _ in range(min(len(self.currentBoids), self.maxBoidCount), self.maxBoidCount):
+            inst = self.scene.Instantiate(self.boidPrefab)
+            self.currentBoids.append(inst)
+            inst.transform.position = cameraPos + glm.vec3(random.randint(-100, 100), random.randint(-100, 100), random.randint(-100, 100)) + glm.vec3(0, 20, 0)
+            
+            

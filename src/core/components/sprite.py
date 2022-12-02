@@ -5,11 +5,12 @@ from core.components.mesh import Mesh
 from core.primitives import PRIMITIVE
 from core.shader import Shader
 from core.components.modelRenderer import ModelRenderer
+import copy
 class SpriteRenderer(Component):
     def Copy(self) -> Component:
         c = SpriteRenderer()
         c.texture = self.texture
-        c.color = self.color
+        c.color = copy.copy(self.color)
         c.modelRenderer = self.modelRenderer.Copy()
         return c
 

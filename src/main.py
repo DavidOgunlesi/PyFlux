@@ -24,7 +24,8 @@ from core.components.postprocessing import PostProcessing
 from core.component import Component
 from core.components.terrain import TerrainMesh
 import math
-from core.components.boid import Boid
+from core.components.boid import DynamicBoidManager
+from core.components.audio import AudioSource, AudioClip
 renderer:Runtime = Runtime()
 
 def GetPoseMatrices(i: int, c:Component, size: int):
@@ -117,10 +118,14 @@ def ConstructScene():
     meshRenderer.meshes[0].IgnoreCameraDistance(False)
     testObj.AddComponent(meshRenderer)
 
-    for i in range(0, 50):
-        birdBoid = Object("bird boid"); 
-        birdBoid.AddComponent(Boid())
-        scene.Instantiate(birdBoid)
+    # for i in range(0, 50):
+    #     birdBoid = Object("bird boid"); 
+    #     birdBoid.AddComponent(Boid())
+    #     scene.Instantiate(birdBoid)
+
+    birdBoid = Object("bird boid Manger"); 
+    birdBoid.AddComponent(DynamicBoidManager())
+    scene.Instantiate(birdBoid)
 
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
@@ -152,6 +157,38 @@ def ConstructScene():
     terrainObj.AddComponent(TerrainMesh(90))
     scene.Instantiate(terrainObj)
     
+    soundObject = Object("sougnd")
+    audioSource = AudioSource(AudioClip("sounds/river-surroundings"), 0)
+    audioSource.playOnAwake = True
+    soundObject.AddComponent(audioSource)
+    audioSource.SetVolume(1)
+    audioSource.SetAttenution(90*2,600)
+
+    audioSource = AudioSource(AudioClip("sounds/river-and-birds"), 1)
+    audioSource.playOnAwake = True
+    soundObject.AddComponent(audioSource)
+    audioSource.SetVolume(0.3)
+    audioSource.SetAttenution(140*2,600)
+
+    audioSource = AudioSource(AudioClip("sounds/river-surroundings"), 2)
+    audioSource.playOnAwake = True
+    soundObject.AddComponent(audioSource)
+    audioSource.SetVolume(0.2)
+    audioSource.SetAttenution(40*2,600)
+
+    audioSource = AudioSource(AudioClip("sounds/jungle_ambience"), 3)
+    audioSource.playOnAwake = True
+    soundObject.AddComponent(audioSource)
+    audioSource.SetVolume(0.2)
+    audioSource.SetAttenution(20*6,600)
+
+    audioSource = AudioSource(AudioClip("sounds/light-wind"), 4)
+    audioSource.playOnAwake = True
+    soundObject.AddComponent(audioSource)
+    audioSource.SetVolume(0.2)
+    audioSource.SetAttenution(2000,-900)
+
+    scene.Instantiate(soundObject)
     return scene
 
 def main():

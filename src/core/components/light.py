@@ -4,7 +4,7 @@ from core.component import Component
 import glm
 from core.components.sprite import SpriteRenderer
 from core.texture import Texture
-
+import copy
 if TYPE_CHECKING:
     from scene import Scene
     from core.object import Object
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 class Light(Component):
     def Copy(self) -> Component:
         c = Light()
-        c.ambient = self.ambient
-        c.diffuse = self.diffuse
-        c.specular = self.specular
+        c.ambient = copy.copy(self.ambient)
+        c.diffuse = copy.copy(self.diffuse)
+        c.specular = copy.copy(self.specular)
         c.sprite = self.sprite
         return c
         
