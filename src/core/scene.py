@@ -33,17 +33,17 @@ class Scene:
 
     def InstantiateOnThread(self, obj: Object, callback:Callable):
         pg.event.pump()
-        obj = obj.Copy()
-        obj.Initialise(self)
-        self.__objects.append(obj)
+        obj2 = obj.Copy()
+        obj2.Initialise(self)
+        self.__objects.append(obj2)
         if self.initialised:
-            for component in obj.components:
+            for component in obj2.components:
                 self.QueueComponentSetup(component)
 
         if callback != None:
-            callback(obj)
+            callback(obj2)
             
-        return obj
+        return obj2
 
 
     def GetObjectCollection(self):

@@ -298,7 +298,7 @@ class TerrainMesh(Component):
         return mat4Arr
 
     def PassUniformsTerrain(self, shader: Shader):
-        shader.setInt("MIN_TESS_LEVEL", 16)
+        shader.setInt("MIN_TESS_LEVEL", 4)
         shader.setInt("MAX_TESS_LEVEL", 64)
         shader.setFloat("MIN_DISTANCE", 100)
         shader.setFloat("MAX_DISTANCE", 3080)
@@ -321,9 +321,9 @@ class TerrainMesh(Component):
 
     def PassUniformsWater(self, shader: Shader):
         shader.setInt("MIN_TESS_LEVEL", 1)
-        shader.setInt("MAX_TESS_LEVEL", 64)
+        shader.setInt("MAX_TESS_LEVEL", 32)
         shader.setFloat("MIN_DISTANCE", 100)
-        shader.setFloat("MAX_DISTANCE", 1000 * self.transform.scale.x)
+        shader.setFloat("MAX_DISTANCE", 3080)
         shader.setFloat("time", gametime.time)    
 
     def PassUniformsTree(self, shader: Shader):

@@ -48,5 +48,7 @@ class SpriteRenderer(Component):
     
     def SetSprite(self, texture: Texture):
         self.texture = texture
-        
+    
+    def SetColor(self, color: glm.vec4):
+        self.color = color
     

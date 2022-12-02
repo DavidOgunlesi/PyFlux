@@ -24,7 +24,7 @@ from core.components.postprocessing import PostProcessing
 from core.component import Component
 from core.components.terrain import TerrainMesh
 import math
-import asyncio
+from core.components.boid import Boid
 renderer:Runtime = Runtime()
 
 def GetPoseMatrices(i: int, c:Component, size: int):
@@ -101,9 +101,7 @@ def ConstructScene():
     #meshRenderer = PRIMITIVE.CUBE()
     #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(meshRenderer)
-    print(">>>", testObj.FindComponentOfType(ModelRenderer))
     o =scene.Instantiate(testObj)
-    print(">>>", o.FindComponentOfType(ModelRenderer))
     o.transform.position = glm.vec3(3,7,2)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(0,4,1)
@@ -118,7 +116,12 @@ def ConstructScene():
     meshRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     meshRenderer.meshes[0].IgnoreCameraDistance(False)
     testObj.AddComponent(meshRenderer)
-    
+
+    for i in range(0, 50):
+        birdBoid = Object("bird boid"); 
+        birdBoid.AddComponent(Boid())
+        scene.Instantiate(birdBoid)
+
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(10,1,0)
     o.transform.rotation = glm.vec3(24,23,1)
@@ -126,30 +129,15 @@ def ConstructScene():
     obj = scene.Instantiate(testObj)
     obj.transform.position = glm.vec3(1,0,0)
     
-    # bagObjPrefab = Object("bag")
-    # modelRenderer = ModelRenderer(MeshLoader.Load("bag"))
-    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
-    # bagObjPrefab.AddComponent(modelRenderer)
-    # bagObj = scene.Instantiate(bagObjPrefab)
-    # bagObj.transform.position = glm.vec3(0,1,0)
-    # bagObj.transform.scale = glm.vec3(.01,.01,.01)
-    # bagObj.transform.rotation = glm.vec3(24,23,1)
-    # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
-    # size = 20*20
-    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.mesh[0], size) for i in range(size)])
+    shipwreckObjPrefab = Object("shipwreck")
+    modelRenderer = ModelRenderer(MeshLoader.Load("models/shipwreck"))
+    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
+    shipwreckObjPrefab.AddComponent(modelRenderer)
+    shipwreckObj = scene.Instantiate(shipwreckObjPrefab)
+    shipwreckObj.transform.position = glm.vec3(0,-900, 3400)
+    shipwreckObj.transform.scale = glm.vec3(2,2,2)
+    shipwreckObj.transform.rotation = glm.vec3(0,90,0)
 
-    # bagObjPrefab = Object("tree")
-    # modelRenderer = ModelRenderer(MeshLoader.Load("models/tree2"))
-    # #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
-    # bagObjPrefab.AddComponent(modelRenderer)
-    # bagObj = scene.Instantiate(bagObjPrefab)
-    # bagObj.transform.position = glm.vec3(0,1,0)
-    # bagObj.transform.scale = glm.vec3(1,1,1)
-    # bagObj.transform.rotation = glm.vec3(-90,0,0)
-    # modelRenderer.meshes[0].SetShader(Shader("env/tree/vertex", "fragment"))
-    # modelRenderer: ModelRenderer = bagObj.FindComponentOfType(ModelRenderer)
-    # size = 20*20
-    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
     
     planeObj = Object("plane")
     meshRenderer = PRIMITIVE.PLANE()
