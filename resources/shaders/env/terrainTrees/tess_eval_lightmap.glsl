@@ -60,7 +60,7 @@ void main(){
     Rotation = Rotation_[0];
 
     // lookup texel at patch coordinate for height and scale + shift as desired
-    Height = (texture(heightMap, texCoord).y/2) * 64.0 - 16.0;
+    Height = (texture(heightMap, texCoord).y) * 64.0 - 16.0;
     // Ramp values below a certain height down
     if (Height < 10.0) {
         Height = Height * 1.5;

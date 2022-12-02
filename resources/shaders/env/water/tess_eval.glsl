@@ -39,7 +39,7 @@ vec3 permute(vec3 x);
 float random (in vec2 st);
 float noise (in vec2 st);
 float fbm (in vec2 st);
-
+float lerpFloat(float a, float b, float t);
 void main(){
     // get patch coordinate
     float u = gl_TessCoord.x;
@@ -75,6 +75,7 @@ void main(){
 
     // lookup texel at patch coordinate for height and scale + shift as desired
     Height = (texture(heightMap, texCoord).y/2) * 64.0 - 16.0;
+    float unscaledHeight = (texture(heightMap, texCoord).y);
     // Ramp values below a certain height down
     if (Height < 10.0) {
         Height = Height * 1.5;
@@ -106,6 +107,14 @@ void main(){
     //float _Steepness = 0.5;
     //vec2 _Direction = vec2(1.0, 1.0);
     float fbm_ = (fbm(p.xz/15+time/100));
+    // // Change wavescale by distance to shore
+    // float wavescale = lerpFloat(0, 3, 1-unscaledHeight);
+    // float h = (Height + 16)/64;
+    // if (h > 0.05) {
+    //     wavescale = 0;
+    // }else{
+    //     wavescale = 3;
+    // }
     Wave _WaveA = Wave(7/3, 0.5/2, vec2(fbm_/3, 1-fbm_/3));
     Wave _WaveB = Wave(5/3, 0.25/2, vec2(1-fbm_, fbm_));
     Wave _WaveC = Wave(1, 0.15/2, vec2(1, 1)); 
@@ -160,6 +169,10 @@ vec3 GerstnerWave (Wave wave, vec3 p, inout vec3 tangent, inout vec3 binormal) {
         d.y * (a * cos(f))
     );
     return p;
+}
+
+float lerpFloat(float a, float b, float t) {
+    return a + (b - a) * t;
 }
 
 // Simplex 2D noise

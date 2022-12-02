@@ -175,7 +175,7 @@ vec4 GetTerrainColor(vec3 norm, vec3 viewDir, float shadow){
     vec3 R = envReflect;
     R *= vec3(1, -1, 1);
 
-    float h = (Height_ + 16)/64.0f;
+    float h = (Height_ + 16)/64;
 	vec4 heightCol = vec4(h, h, h, 1.0);
     
     const int numberOfTextures = 6;
@@ -196,7 +196,7 @@ vec4 GetTerrainColor(vec3 norm, vec3 viewDir, float shadow){
     
 
     vec4 colors2[numberOfTextures] = vec4[numberOfTextures](texture(waterTexture, normTexCoord), texture(sandTexture, normTexCoord), texture(grassTexture, normTexCoord),texture(dirtTexture, normTexCoord), texture(material.specular, normTexCoord), texture(material.specular, normTexCoord));
-    float locations[numberOfTextures] = float[numberOfTextures](0.1, 0.11, 0.12, 0.26, 0.5, 0.63);
+    float locations[numberOfTextures] = float[numberOfTextures](0.05, 0.11, 0.12, 0.26, 0.5, 0.63);
     vec4 color = LinearGradient(h, colors, locations);
     vec4 color2 = LinearGradient(h, colors2, locations);
     vec4 col = color2 * color * ( (1.0 - shadow));//(heightCol + vec4(0,0, 0.2-heightCol.z,1))
