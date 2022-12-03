@@ -10,4 +10,4 @@ A black screen should appear, after 5 seconds you should hear jungle sounds and 
 Use scroll wheel to change camera movement speed
 Press ESC to quit at any time
 Press F2 to switch to wireframe rendering
-Press F! to switch to normal rendering
+Press F1 to switch to normal rendering
