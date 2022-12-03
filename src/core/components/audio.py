@@ -11,6 +11,9 @@ from core.util import GetRootPathDir
 
 
 class AudioClip:
+    '''
+    Audio clip manages the audio file and the sound object
+    '''
     def __init__(self, path: str, resourcesRootPath:str="resources/", rootPath:str=GetRootPathDir()):
         path = self.ValidatePath(f'{rootPath}/{resourcesRootPath}', path)
         self.path = f'{rootPath}/{resourcesRootPath}{path}'
@@ -35,6 +38,9 @@ class AudioClip:
         return path
 
 class AudioSource(Component):
+    '''
+    Audiosource is a component that plays audio files
+    '''
     mixer.init()
     def Copy(self) -> Component:
         c = AudioSource()

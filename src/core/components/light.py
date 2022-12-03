@@ -16,6 +16,9 @@ if TYPE_CHECKING:
     from core.object import Object
 
 class Light(Component):
+    '''
+    Light component creates a light source for the object.
+    '''
     def Copy(self) -> Component:
         c = Light()
         c.ambient = copy.copy(self.ambient)
@@ -55,6 +58,9 @@ class Light(Component):
         self.ambient = color
         
 class DirectionalLight(Light):
+    '''
+    Directional light is a light that is infinitely far away and the rays are parallel.
+    '''
     def __init__(self):
         Light.__init__(self)
         self.direction = glm.vec3(0, 0, 0)
@@ -63,6 +69,9 @@ class DirectionalLight(Light):
         self.direction = dir
         
 class PointLight(Light):
+    '''
+    Point light is a light that emits light in all directions from a point.
+    '''
     def __init__(self):
         Light.__init__(self)
         self.constant = 1.0
@@ -70,6 +79,9 @@ class PointLight(Light):
         self.quadratic = 0.032
         
 class SpotLight(DirectionalLight, PointLight):
+    '''
+    Spot light is a light that emits light in a cone.
+    '''
     def __init__(self):
         DirectionalLight.__init__(self)
         PointLight.__init__(self)

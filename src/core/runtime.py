@@ -14,7 +14,10 @@ from typing import List
 import glm
 from core.components.postprocessing import PostProcessing
 class Renderer:
-    
+    '''
+    Renderer class handles the rendering of the scene.
+    '''
+
     def __init__(self):
         self.deltaTime = 0
         self.active = False

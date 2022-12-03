@@ -23,7 +23,9 @@ import copy
 
 
 class Mesh(Component):
-    
+    '''
+    Mesh Component handles the rendering of a mesh.
+    '''
     class CULLMODE:
         FRONT = 0,
         BACK = 1,

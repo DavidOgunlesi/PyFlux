@@ -16,7 +16,9 @@ if TYPE_CHECKING:
     from core.scene import Scene
 
 class PostProcessing(Component):
-    
+    '''
+    Post processing component handles the post processing effect stack
+    '''
     class Effect:
         def __init__(self):
             self.shader: Shader = None
@@ -50,6 +52,7 @@ class PostProcessing(Component):
             self.__skip += 1
             shader.setFloat("intensity", self.intensity)
             pass
+    
     class Vignette(Effect):
         def __init__(self, power:float):
             self.shader = Shader("misc/rendertexture/vert", "postprocessing/vignette")

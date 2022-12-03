@@ -15,7 +15,9 @@ from core.object import Object
 
 
 class Scene:
-    
+    '''
+    The scene class is the main class for the game engine. It is responsible for managing all objects in the scene.
+    '''
     def __init__(self):
         self.initialised = False
         self.__objects: List[Object] = []

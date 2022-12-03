@@ -4,6 +4,9 @@ from core.components.modelRenderer import ModelRenderer
 
 
 class PRIMITIVE:
+    '''
+    PRIMITIVE is a class that contains static methods that return a mesh.
+    '''
     @classmethod
     def CUBE(cls):
         # CUBE

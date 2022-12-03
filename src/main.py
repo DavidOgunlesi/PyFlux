@@ -89,7 +89,7 @@ def ConstructScene() -> Scene:
 
 
     birdBoid = Object("bird boid Manger"); 
-    birdBoid.AddComponent(DynamicBoidManager())
+    birdBoid.AddComponent(DynamicBoidManager(maxBoidCount=30))
     scene.Instantiate(birdBoid)
 
     o =scene.Instantiate(testObj)

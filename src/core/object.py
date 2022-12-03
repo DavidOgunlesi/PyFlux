@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from scene import Scene
 
 class Object:
+    ''' 
+    Object class is the base class for all objects in the scene.
+    '''
     def __init__(self, name):
         self.components:List[Component] = []
         self.transform = Transform()

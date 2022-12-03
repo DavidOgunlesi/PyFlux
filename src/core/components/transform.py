@@ -10,6 +10,10 @@ from core.component import Component
 
 
 class Transform(Component):
+    '''
+    Trandsform component handles the position, rotation and scale of an object.
+    '''
+
     def Copy(self) -> Component:
         c = Transform()
         c.position = copy.copy(self.position)
@@ -18,6 +22,7 @@ class Transform(Component):
         c.pivot = copy.copy(self.pivot)
         c.prevPosition = copy.copy(self.prevPosition)
         return c
+    
     def __init__(self):
         Component.__init__(self)
         self.position = glm.vec3(0, 0, 0)

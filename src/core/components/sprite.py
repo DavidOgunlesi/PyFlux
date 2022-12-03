@@ -11,6 +11,10 @@ from core.texture import Texture
 
 
 class SpriteRenderer(Component):
+    '''
+    SpriteRenderer is a component that renders a sprite.
+    '''
+
     def Copy(self) -> Component:
         c = SpriteRenderer()
         c.texture = self.texture

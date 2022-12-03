@@ -11,6 +11,9 @@ from core.texture import Texture
 if TYPE_CHECKING:
     from core.collections.light import LightCollection
 class Material:
+    '''
+    Material class handles the material properties of an object.
+    '''
     def __init__(self, shader: Shader, diffuseTex:Texture = None, specularTex:Texture = None):
         self.shader = shader
         self.diffuseTex = diffuseTex or Texture("textures/noTex.png")

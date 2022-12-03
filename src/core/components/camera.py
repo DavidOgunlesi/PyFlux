@@ -12,6 +12,9 @@ from core.component import Component
 
 
 class Camera(Component):
+    '''
+    Camera component handles the camera movement and rotation
+    '''
     def Copy(self) -> Component:
         c = Camera()
         c.viewMatrix = copy.copy(self.viewMatrix)

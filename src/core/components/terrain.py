@@ -27,6 +27,10 @@ if TYPE_CHECKING:
     from core.scene import Scene
 
 class TerrainMesh(Component):
+    '''
+    TerrainMesh Component is responsible for generating the terrain mesh and storing the heightmap
+    Includes creating trees, grass and water
+    '''
     def Copy(self) -> Component:
         c = TerrainMesh(self.resolution)
         c.plane = self.plane

@@ -8,7 +8,9 @@ if TYPE_CHECKING:
 
     from core.object import Object
 class Component:
-    
+    '''
+    Component is the base class for all components.
+    '''
     def __init__(self):
         self.scene: Scene = None
         self.parent: Object = None

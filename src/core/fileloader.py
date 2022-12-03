@@ -28,7 +28,9 @@ def ValidatePath(dir:str, path:str):
     return path
 
 class MeshLoader:
-    
+    '''
+    MeshLoader handles loading of mesh files
+    '''
     process_flags = (
         assimp_py.Process_Triangulate | 
         #assimp_py.Process_CalcTangentSpace |

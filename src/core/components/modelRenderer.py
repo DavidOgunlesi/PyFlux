@@ -17,6 +17,10 @@ import copy
 
 
 class ModelRenderer(Component):
+    '''
+    Modelrendereer is a component that renders a collection of meshes.
+    '''
+    
     def Copy(self) -> Component:
 
         c = ModelRenderer(MeshCollection())

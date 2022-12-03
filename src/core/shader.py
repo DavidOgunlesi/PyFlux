@@ -5,7 +5,9 @@ from core.util import GetRootPathDir
 
 
 class Shader:
-    
+    '''
+    The shader class is used to load and compile shaders from files
+    '''
     def __init__(
         self, 
         vertexShaderName: str, 

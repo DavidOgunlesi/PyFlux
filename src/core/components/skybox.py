@@ -15,7 +15,9 @@ if TYPE_CHECKING:
     from core.material import Material
 
 class Skybox(Component):
-
+    '''
+    Skybox is a component that renders a skybox.
+    '''
     def Copy(self) -> Component:
         c = Skybox(self.resourcepath, self.faces)
         c.material = self.material

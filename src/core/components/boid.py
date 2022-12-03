@@ -12,7 +12,9 @@ from core.texture import Texture
 
 
 class Boid(Component):
-
+    '''
+    Boid component creates a flocking behavior for the object.
+    '''
     global_boids: List[Boid] = []
     #Max acceleration and speed
     Max_Acceleration = 5.0
@@ -153,6 +155,10 @@ class Boid(Component):
 
 
 class DynamicBoidManager(Component):
+    '''
+    Boid manager that creates boids at runtime and destroys them when they are out of range
+    Fills the scene with boids
+    '''
     instance: DynamicBoidManager = None
     def Copy(self) -> Component:
         c = DynamicBoidManager(self.minBoidCount, self.maxBoidCount)
