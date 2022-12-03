@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Type, Tuple
+
+from typing import TYPE_CHECKING, List, Tuple
+
 import OpenGL.GL as gl
+
+from core.components.light import PointLight, SpotLight
 from core.shader import Shader
 from core.texture import Texture
-
-from core.components.light import SpotLight, PointLight 
-import glm
 
 if TYPE_CHECKING:
     from core.collections.light import LightCollection

@@ -1,16 +1,19 @@
-from typing import List, Callable
-from core.object import Object
-import copy 
-from core.components.camera import Camera
+import threading
+import time
+from typing import Callable, List
+
+import pygame as pg
+
 from core.collections.light import LightCollection
-from core.components.light import Light, DirectionalLight
-from core.components.skybox import Skybox
+from core.component import Component
+from core.components.camera import Camera
+from core.components.light import DirectionalLight
 from core.components.mesh import Mesh
 from core.components.modelRenderer import ModelRenderer
-from core.component import Component
-import time
-import threading
-import pygame as pg
+from core.components.skybox import Skybox
+from core.object import Object
+
+
 class Scene:
     
     def __init__(self):

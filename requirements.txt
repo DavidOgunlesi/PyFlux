@@ -1,5 +1,4 @@
 assimp_py==1.0.6
-glm==0.4.3
 numpy==1.22.3
 perlin_noise==1.12
 pygame==2.0.1

@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List, Type
+
 from core.component import Component
 from core.components.transform import Transform
+
 if TYPE_CHECKING:
     from scene import Scene
 

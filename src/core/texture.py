@@ -1,9 +1,12 @@
-import pygame as pg
-import OpenGL.GL as gl
-from core.util import GetRootPathDir
 import os
 from typing import List
-        
+
+import OpenGL.GL as gl
+import pygame as pg
+
+from core.util import GetRootPathDir
+
+
 class Texture:
     def __init__(self, path:str, textureRootPath:str="resources/", rootPath:str=GetRootPathDir(), colorMode = "RGBA", texIDOverride:int=None):
         self.width, self.height = 0, 0

@@ -1,27 +1,26 @@
 from __future__ import annotations
+
 import ctypes
-import time
+from typing import TYPE_CHECKING, Callable
 
 import glm
 import numpy as np
 import OpenGL.GL as gl
-import pygame as pg
-from core.constants import FLOAT_SIZE
-
 from pygame.locals import *
-from typing import List
-from core.component import Component
-import core.globals as GLOBAL
-import core.constants as const
 
-from typing import TYPE_CHECKING, Callable
+import core.constants as const
+import core.globals as GLOBAL
+from core.component import Component
+from core.constants import FLOAT_SIZE
 from core.shader import Shader
+
 if TYPE_CHECKING:
     from core.material import Material
-    from core.runtime import Runtime
     
     from core.texture import Texture
+
 import copy
+
 
 class Mesh(Component):
     

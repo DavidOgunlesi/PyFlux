@@ -1,14 +1,19 @@
 from __future__ import annotations
+
+import copy
 from typing import TYPE_CHECKING
-from core.component import Component
+
 import glm
+
+from core.component import Component
 from core.components.sprite import SpriteRenderer
 from core.texture import Texture
-import copy
+
 if TYPE_CHECKING:
-    from scene import Scene
-    from core.object import Object
     from components.transform import Transform
+    from scene import Scene
+
+    from core.object import Object
 
 class Light(Component):
     def Copy(self) -> Component:

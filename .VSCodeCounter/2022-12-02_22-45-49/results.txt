@@ -1,0 +1,115 @@
+Date : 2022-12-02 22:45:49
+Directory : c:\Users\timid\Desktop\graphics\PyFlux
+Total : 70 files,  5213 codes, 867 comments, 1278 blanks, all 7358 lines
+
+Languages
++------------------+------------+------------+------------+------------+------------+
+| language         | files      | code       | comment    | blank      | total      |
++------------------+------------+------------+------------+------------+------------+
+| Python           |         32 |      2,695 |        425 |        693 |      3,813 |
+| GLSL             |         37 |      2,511 |        442 |        584 |      3,537 |
+| pip requirements |          1 |          7 |          0 |          1 |          8 |
++------------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                               | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                  |         70 |      5,213 |        867 |      1,278 |      7,358 |
+| resources                                                                                          |         37 |      2,511 |        442 |        584 |      3,537 |
+| resources\shaders                                                                                  |         37 |      2,511 |        442 |        584 |      3,537 |
+| resources\shaders\env                                                                              |         22 |      2,031 |        357 |        453 |      2,841 |
+| resources\shaders\env\lightmap                                                                     |          2 |         22 |          3 |          5 |         30 |
+| resources\shaders\env\skybox                                                                       |          2 |         18 |          0 |          5 |         23 |
+| resources\shaders\env\terrain                                                                      |          6 |        639 |        114 |        150 |        903 |
+| resources\shaders\env\terrainTrees                                                                 |          6 |        641 |        115 |        140 |        896 |
+| resources\shaders\env\tree                                                                         |          2 |        104 |         12 |         26 |        142 |
+| resources\shaders\env\water                                                                        |          4 |        607 |        113 |        127 |        847 |
+| resources\shaders\misc                                                                             |          2 |         16 |          1 |          5 |         22 |
+| resources\shaders\misc\rendertexture                                                               |          2 |         16 |          1 |          5 |         22 |
+| resources\shaders\postprocessing                                                                   |          5 |         76 |         12 |         25 |        113 |
+| resources\shaders\postprocessing\volumetric                                                        |          1 |         35 |         12 |         10 |         57 |
+| resources\shaders\preoccpass                                                                       |          2 |         17 |          0 |          4 |         21 |
+| resources\shaders\sprite                                                                           |          1 |         12 |          0 |          2 |         14 |
+| src                                                                                                |         31 |      2,523 |        331 |        616 |      3,470 |
+| src\core                                                                                           |         30 |      2,366 |        261 |        557 |      3,184 |
+| src\core\collections                                                                               |          2 |         20 |          0 |          6 |         26 |
+| src\core\components                                                                                |         11 |      1,350 |        122 |        344 |      1,816 |
++----------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| filename                                                                                           | language         | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| c:\Users\timid\Desktop\graphics\PyFlux\example.py                                                  | Python           |        172 |         94 |         77 |        343 |
+| c:\Users\timid\Desktop\graphics\PyFlux\requirements.txt                                            | pip requirements |          7 |          0 |          1 |          8 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\basic_lit.glsl                            | GLSL             |        152 |         34 |         42 |        228 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\lightmap\null_frag.glsl               | GLSL             |         12 |          3 |          3 |         18 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\lightmap\simpledepth_vert.glsl        | GLSL             |         10 |          0 |          2 |         12 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\skybox\fragment.glsl                  | GLSL             |          8 |          0 |          2 |         10 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\skybox\vertex.glsl                    | GLSL             |         10 |          0 |          3 |         13 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\basic_lit.glsl           | GLSL             |        204 |         39 |         47 |        290 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\geom.glsl                | GLSL             |        179 |         20 |         39 |        238 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\tess_cont.glsl           | GLSL             |         56 |         16 |         12 |         84 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\tess_eval.glsl           | GLSL             |         67 |         18 |         16 |        101 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\tess_eval_lightmap.glsl  | GLSL             |         64 |         18 |         15 |         97 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrainTrees\vert.glsl                | GLSL             |         71 |          4 |         11 |         86 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\basic_lit.glsl                | GLSL             |        222 |         50 |         62 |        334 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\geom.glsl                     | GLSL             |        167 |          8 |         37 |        212 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\tess_cont.glsl                | GLSL             |         53 |         16 |         11 |         80 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\tess_eval.glsl                | GLSL             |         64 |         18 |         13 |         95 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\tess_eval_lightmap.glsl       | GLSL             |         64 |         18 |         15 |         97 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\terrain\vert.glsl                     | GLSL             |         69 |          4 |         12 |         85 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\tree\geom.glsl                        | GLSL             |         29 |          0 |          7 |         36 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\tree\vertex.glsl                      | GLSL             |         75 |         12 |         19 |        106 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\water\frag.glsl                       | GLSL             |        177 |         34 |         49 |        260 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\water\tess_eval.glsl                  | GLSL             |        185 |         41 |         30 |        256 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\water\tess_eval_lightmap.glsl         | GLSL             |        180 |         33 |         30 |        243 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\env\water\vert.glsl                       | GLSL             |         65 |          5 |         18 |         88 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\fragment.glsl                             | GLSL             |        153 |         34 |         42 |        229 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\misc\rendertexture\frag.glsl              | GLSL             |          7 |          1 |          3 |         11 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\misc\rendertexture\vert.glsl              | GLSL             |          9 |          0 |          2 |         11 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\postprocessing\default.glsl               | GLSL             |          7 |          0 |          3 |         10 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\postprocessing\filmgrain.glsl             | GLSL             |         18 |          0 |          6 |         24 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\postprocessing\grayscale.glsl             | GLSL             |          9 |          0 |          3 |         12 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\postprocessing\inversion.glsl             | GLSL             |          7 |          0 |          3 |         10 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\postprocessing\volumetric\lightshaft.glsl | GLSL             |         35 |         12 |         10 |         57 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\preoccpass\frag.glsl                      | GLSL             |          5 |          0 |          1 |          6 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\preoccpass\vert.glsl                      | GLSL             |         12 |          0 |          3 |         15 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\sprite\unlit.glsl                         | GLSL             |         12 |          0 |          2 |         14 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\unlit.glsl                                | GLSL             |         14 |          0 |          3 |         17 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\uv.glsl                                   | GLSL             |         15 |          1 |          3 |         19 |
+| c:\Users\timid\Desktop\graphics\PyFlux\resources\shaders\vertex.glsl                               | GLSL             |         25 |          3 |          5 |         33 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\collections\light.py                               | Python           |         10 |          0 |          3 |         13 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\collections\mesh.py                                | Python           |         10 |          0 |          3 |         13 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\component.py                                       | Python           |         35 |          0 |         11 |         46 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\audio.py                                | Python           |         76 |          7 |         13 |         96 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\boid.py                                 | Python           |        138 |         23 |         44 |        205 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\camera.py                               | Python           |        131 |          3 |         23 |        157 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\light.py                                | Python           |         65 |          0 |         15 |         80 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\mesh.py                                 | Python           |        318 |         42 |         92 |        452 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\modelRenderer.py                        | Python           |         67 |          3 |         21 |         91 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\postprocessing.py                       | Python           |        121 |         12 |         34 |        167 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\skybox.py                               | Python           |         36 |          1 |          9 |         46 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\sprite.py                               | Python           |         42 |          1 |         12 |         55 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\terrain.py                              | Python           |        274 |         30 |         60 |        364 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\components\transform.py                            | Python           |         82 |          0 |         21 |        103 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\constants.py                                       | Python           |          2 |          0 |          0 |          2 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\eventsystem.py                                     | Python           |         33 |          3 |          8 |         44 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\fileloader.py                                      | Python           |         76 |         33 |         18 |        127 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\gametime.py                                        | Python           |          2 |          0 |          0 |          2 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\globals.py                                         | Python           |          9 |          0 |          2 |         11 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\input.py                                           | Python           |         27 |          0 |          7 |         34 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\material.py                                        | Python           |         71 |          1 |         23 |         95 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\object.py                                          | Python           |         60 |          1 |         11 |         72 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\primitives.py                                      | Python           |        190 |         15 |          5 |        210 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\runtime.py                                         | Python           |        155 |         25 |         44 |        224 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\scene.py                                           | Python           |        103 |          1 |         19 |        123 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\shader.py                                          | Python           |         97 |         17 |         24 |        138 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\singleton.py                                       | Python           |         14 |         23 |          5 |         42 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\stdlib.py                                          | Python           |         21 |          0 |          4 |         25 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\texture.py                                         | Python           |         98 |         20 |         25 |        143 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\core\util.py                                            | Python           |          3 |          0 |          1 |          4 |
+| c:\Users\timid\Desktop\graphics\PyFlux\src\main.py                                                 | Python           |        157 |         70 |         59 |        286 |
+| Total                                                                                              |                  |      5,213 |        867 |      1,278 |      7,358 |
++----------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+

@@ -1,12 +1,15 @@
-from core.util import GetRootPathDir
-from core.components.mesh import Mesh
-import assimp_py 
+import os
+
+import assimp_py
 import numpy as np
+
 from core.collections.mesh import MeshCollection
+from core.components.mesh import Mesh
 from core.material import Material
 from core.shader import Shader
 from core.texture import Texture
-import os
+from core.util import GetRootPathDir
+
 
  # If file type isnt specified, it will try to load the file with the following extensions in order
 def ValidatePath(dir:str, path:str):

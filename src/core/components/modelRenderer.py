@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, List
+
+import glm
 
 from core.collections.mesh import MeshCollection
 from core.component import Component
-from core.components.mesh import Mesh
 from core.shader import Shader
-import numpy as np
-import glm
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from components.transform import Transform
 
 import copy
+
+
 class ModelRenderer(Component):
     def Copy(self) -> Component:
 

@@ -1,45 +1,37 @@
-import ctypes
-import time
-
 import glm
-import numpy as np
 import OpenGL.GL as gl
 import pygame as pg
-from core.components.mesh import Mesh
-from core.components.transform import Transform
-from core.material import Material
-from core.object import Object
 from pygame.locals import *
-from core.runtime import Runtime
-from core.scene import Scene
-from core.shader import Shader
-from core.texture import Texture, CubeMap
+
+import core.globals as GLOBAL
+from core.components.audio import AudioClip, AudioSource
+from core.components.boid import DynamicBoidManager
 from core.components.camera import Camera
-from core.components.sprite import SpriteRenderer
-from core.primitives import PRIMITIVE
-from core.components.light import DirectionalLight, PointLight,SpotLight
-from core.fileloader import MeshLoader
+from core.components.light import DirectionalLight, PointLight, SpotLight
 from core.components.modelRenderer import ModelRenderer
 from core.components.postprocessing import PostProcessing
-from core.component import Component
 from core.components.terrain import TerrainMesh
-import math
-from core.components.boid import DynamicBoidManager
-from core.components.audio import AudioSource, AudioClip
-renderer:Runtime = Runtime()
+from core.fileloader import MeshLoader
+from core.material import Material
+from core.object import Object
+from core.primitives import PRIMITIVE
+from core.runtime import Renderer
+from core.scene import Scene
+from core.shader import Shader
+from core.texture import Texture
 
-def GetPoseMatrices(i: int, c:Component, size: int):
-    # Create vectors in a grid based on i index, with spacing
-    spacing = 3
-    vec = glm.vec3(((i+1) % math.sqrt(size)) * spacing, 0, ( math.floor(i / math.sqrt(size))) * spacing)
-    poseMtx = c.transform.GetPoseMatrix(translation=vec)
-    mat4Arr = np.array(poseMtx, dtype=np.float32)
-    mat4Arr = mat4Arr.flatten()
-    return mat4Arr
+renderer:Renderer = Renderer()
 
-def ConstructScene():
-    scene = Scene()
+
+def ConstructScene() -> Scene:
+    '''
+    # Construct Scene #
+    This function is used to construct the scene
     
+    Returns:
+        Scene: The scene to be rendered
+    '''
+    scene = Scene()
     
     camObj = Object("Camera")
     cam = Camera()
@@ -53,11 +45,8 @@ def ConstructScene():
     light = Object("light")
     l = scene.Instantiate(light)
 
-    #meshRenderer = PRIMITIVE.CUBE()
-    #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "unlit"), Texture("textures/cat.png"),  Texture("textures/cat.png")))
     
     l.transform.position = glm.vec3(10,10,0)
-    #l.AddComponent(meshRenderer)
     l.AddComponent(DirectionalLight())
     l.AddComponent(PointLight())
     l.transform.rotation = glm.vec3(24,23,1)
@@ -65,17 +54,6 @@ def ConstructScene():
     d.direction = glm.vec3(-0.2, -1.0, -0.3)
     scene.SetMainLight(l)
     
-    # # render tex
-    # ro = Object("render tex")
-    # renderTex = PRIMITIVE.QUAD()
-    # renderTex.mesh[0].SetMaterial(Material(Shader("misc/rendertexture/vert", "misc/rendertexture/frag")))
-    # renderTex.mesh[0].SetCullMode(Mesh.CULLMODE.NONE)
-    # renderTex.mesh[0].castShadows = False
-    # renderTex.mesh[0].renderPass = False
-    # ro.AddComponent(renderTex)
-    
-    # o = scene.Instantiate(ro)
-    # renderer.renderTexMesh = o.FindComponentOfType(ModelRenderer).mesh[0]
     
     light = Object("light")
     l = scene.Instantiate(light)
@@ -84,10 +62,6 @@ def ConstructScene():
     s: SpotLight = l.FindComponentOfType(SpotLight)
     s.direction = glm.vec3(0, -1, 0)
     
-    # sprPb = Object()
-    # spr = scene.Instantiate(sprPb)
-    # spr.transform.position = glm.vec3(-3,-3,-3)
-    # spr.AddComponent(SpriteRenderer(Texture("textures/light.png")))
     
     testObj = Object("cube")
     meshRenderer = PRIMITIVE.CUBE()
@@ -99,8 +73,6 @@ def ConstructScene():
     o.transform.rotation = glm.vec3(24,23,1)
     
     testObj = Object("cube2")
-    #meshRenderer = PRIMITIVE.CUBE()
-    #meshRenderer.mesh[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     testObj.AddComponent(meshRenderer)
     o =scene.Instantiate(testObj)
     o.transform.position = glm.vec3(3,7,2)
@@ -109,19 +81,12 @@ def ConstructScene():
     
     modelRenderer: ModelRenderer = o.FindComponentOfType(ModelRenderer)
     
-    # size = 200*200
-    # modelRenderer.modelMatrices = np.array([GetPoseMatrices(i, modelRenderer.meshes[0], size) for i in range(size)])
-
     testObj = Object("cube3")
     meshRenderer = PRIMITIVE.CUBE()
     meshRenderer.meshes[0].SetMaterial(Material(Shader("vertex", "fragment"), diffuseTex = Texture("textures/container2.png"), specularTex=Texture("textures/container2_specular.png")))
     meshRenderer.meshes[0].IgnoreCameraDistance(False)
     testObj.AddComponent(meshRenderer)
 
-    # for i in range(0, 50):
-    #     birdBoid = Object("bird boid"); 
-    #     birdBoid.AddComponent(Boid())
-    #     scene.Instantiate(birdBoid)
 
     birdBoid = Object("bird boid Manger"); 
     birdBoid.AddComponent(DynamicBoidManager())
@@ -136,7 +101,6 @@ def ConstructScene():
     
     shipwreckObjPrefab = Object("shipwreck")
     modelRenderer = ModelRenderer(MeshLoader.Load("models/shipwreck"))
-    #modelRenderer = ModelRenderer(MeshLoader.Load("suzanne.obj"))
     shipwreckObjPrefab.AddComponent(modelRenderer)
     shipwreckObj = scene.Instantiate(shipwreckObjPrefab)
     shipwreckObj.transform.position = glm.vec3(0,-900, 3400)
@@ -192,11 +156,15 @@ def ConstructScene():
     return scene
 
 def main():
+    '''
+    # Main function #
+    Initializes the engine and creates a scene
+    '''
     pg.init()
     # Set the caption of the screen
     pg.display.set_caption('My Window')
-    
-    window_size = [800, 600]
+    GLOBAL.WINDOW_DIMENSIONS = (1920, 1080)
+    window_size = [GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1]]
     
     pg.display.gl_set_attribute(GL_STENCIL_SIZE, 8)
     # Enable double frame buffering and tell pygame to use opengl context
@@ -242,45 +210,6 @@ def main():
     
     renderer.InitRuntime()
     renderer.Run()
-
-
-# def pygame_event_loop(loop, event_queue):
-#     while True:
-#         event = pg.event.wait()
-#         asyncio.run_coroutine_threadsafe(event_queue.put(event), loop=loop)
-
-# async def mainloop():
-#     current_time = 0
-#     while True:
-#         last_time, current_time = current_time, time.time()
-#         print(1/(current_time-last_time))
-        
-#         await asyncio.sleep(1 / 60 - (current_time - last_time))  # tick
-
-# async def sideloop():
-#     current_time = 0
-#     while True:
-#         last_time, current_time = current_time, time.time()
-        
-#         await asyncio.sleep(1 / 60 - (current_time - last_time))  # tick       
-
-# def loop():
-#     loop = asyncio.get_event_loop()
-#     event_queue = asyncio.Queue()
-
-#     pygame_task = loop.run_in_executor(None, pygame_event_loop, loop, event_queue)
-#     main_loop = asyncio.ensure_future(mainloop())
-#     side_loop = asyncio.ensure_future(sideloop())
-#     try:
-#         loop.run_forever()
-#     except KeyboardInterrupt:
-#         pass
-#     finally:
-#         pygame_task.cancel()
-#         main_loop.cancel()
-#         side_loop.cancel()
-
-#     pg.quit()
 
 if __name__ == "__main__":
     main()

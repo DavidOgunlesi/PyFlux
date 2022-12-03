@@ -1,11 +1,15 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
-from core.component import Component
-import glm
-from core.components.sprite import SpriteRenderer
-from core.texture import Texture
+
 import random
+from typing import List
+
+import glm
+
+from core.component import Component
+from core.components.sprite import SpriteRenderer
 from core.object import Object
+from core.texture import Texture
+
 
 class Boid(Component):
 

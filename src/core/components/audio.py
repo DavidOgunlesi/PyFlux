@@ -1,18 +1,15 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+
+
 from core.component import Component
-import glm
-from core.components.sprite import SpriteRenderer
-from core.texture import Texture
-import random
-if TYPE_CHECKING:
-    from scene import Scene
-    from core.object import Object
-    from components.transform import Transform
+
+import os
 
 from pygame import mixer
+
 from core.util import GetRootPathDir
-import os
+
+
 class AudioClip:
     def __init__(self, path: str, resourcesRootPath:str="resources/", rootPath:str=GetRootPathDir()):
         path = self.ValidatePath(f'{rootPath}/{resourcesRootPath}', path)

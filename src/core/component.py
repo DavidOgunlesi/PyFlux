@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type, List
-import copy
+
+from typing import TYPE_CHECKING, Type
+
 if TYPE_CHECKING:
-    from scene import Scene
-    from core.object import Object
     from components.transform import Transform
+    from scene import Scene
+
+    from core.object import Object
 class Component:
     
     def __init__(self):

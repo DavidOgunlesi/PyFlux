@@ -1,10 +1,14 @@
 from __future__ import annotations
-from typing import ClassVar
-from core.component import Component
-import glm
-import math
-import numpy as np
+
 import copy
+import math
+
+import glm
+import numpy as np
+
+from core.component import Component
+
+
 class Transform(Component):
     def Copy(self) -> Component:
         c = Transform()

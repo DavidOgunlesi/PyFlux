@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Callable, Tuple, Any, Dict
+from typing import List, Callable, Dict
 import pygame as pg
 
 eventTypeDict: Dict[int, PollEvent] = {}

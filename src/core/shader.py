@@ -1,6 +1,9 @@
-import OpenGL.GL as gl
-from core.util import GetRootPathDir
 import glm
+import OpenGL.GL as gl
+
+from core.util import GetRootPathDir
+
+
 class Shader:
     
     def __init__(

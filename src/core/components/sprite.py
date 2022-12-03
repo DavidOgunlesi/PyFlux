@@ -1,11 +1,15 @@
+import copy
+
 import glm
-from core.texture import Texture
+
 from core.component import Component
 from core.components.mesh import Mesh
+from core.components.modelRenderer import ModelRenderer
 from core.primitives import PRIMITIVE
 from core.shader import Shader
-from core.components.modelRenderer import ModelRenderer
-import copy
+from core.texture import Texture
+
+
 class SpriteRenderer(Component):
     def Copy(self) -> Component:
         c = SpriteRenderer()

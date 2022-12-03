@@ -13,11 +13,7 @@ from core.components.mesh import Mesh
 from typing import List
 import glm
 from core.components.postprocessing import PostProcessing
-class Runtime:
-    
-    class RenderJob:
-        def __init__(self) -> None:
-            self.mesh: Mesh = None
+class Renderer:
     
     def __init__(self):
         self.deltaTime = 0
@@ -125,7 +121,7 @@ class Runtime:
         
     def OcculusionPrePass(self):
         # 1. first render to depth map
-        gl.glViewport(0, 0, 800, 600)
+        gl.glViewport(0, 0, GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1])
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.preoccpassFBO)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
 
@@ -154,7 +150,7 @@ class Runtime:
         GLOBAL.GLOBAL_RENDERSHADER = None
     
     def RenderSceneWithPostProcessing(self):
-        gl.glViewport(0, 0, 800, 600)
+        gl.glViewport(0, 0, GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1])
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
@@ -185,14 +181,14 @@ class Runtime:
         self.postProcessor.freeFBO()
          
     def RenderSceneWithoutPostProcessing(self):
-        gl.glViewport(0, 0, 800, 600)
+        gl.glViewport(0, 0, GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1])
         gl.glStencilMask(0xff)
         # Clear color and depth buffers
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)
         self.RenderData(False)
         
     def GenDepthMap(self):
-        depthMapFBO = gl.glGenFramebuffers(1);
+        depthMapFBO = gl.glGenFramebuffers(1)
 
         # Create a 2D texture that we'll use as the framebuffer's depth buffer
         depthMap = gl.glGenTextures(1)

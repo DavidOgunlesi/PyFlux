@@ -1,6 +1,8 @@
+from core.collections.mesh import MeshCollection
 from core.components.mesh import Mesh
 from core.components.modelRenderer import ModelRenderer
-from core.collections.mesh import MeshCollection
+
+
 class PRIMITIVE:
     @classmethod
     def CUBE(cls):

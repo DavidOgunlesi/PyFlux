@@ -1,12 +1,16 @@
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import glm
+
 from core.component import Component
-from core.shader import Shader
+from core.components.mesh import Mesh
 from core.components.modelRenderer import ModelRenderer
 from core.primitives import PRIMITIVE
-from core.components.mesh import Mesh
+from core.shader import Shader
 from core.texture import CubeMap
-from typing import TYPE_CHECKING
-import glm
+
 if TYPE_CHECKING:
     from core.material import Material
 

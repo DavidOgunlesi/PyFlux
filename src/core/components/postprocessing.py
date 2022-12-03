@@ -50,7 +50,13 @@ class PostProcessing(Component):
             self.__skip += 1
             shader.setFloat("intensity", self.intensity)
             pass
-        
+    class Vignette(Effect):
+        def __init__(self, power:float):
+            self.shader = Shader("misc/rendertexture/vert", "postprocessing/vignette")
+            self.power = 0.25
+        def PassUniforms(self, shader: Shader):
+            shader.setFloat("power", self.power)
+
     class VolumetricLightShaft(Effect):
         def __init__(self):
             self.shader = Shader("misc/rendertexture/vert", "postprocessing/volumetric/lightshaft")
@@ -94,7 +100,7 @@ class PostProcessing(Component):
         # Create a 2D texture that we'll use as the framebuffer's depth buffer
         tex = gl.glGenTextures(1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, tex)
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, 800, 600, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1], 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR )
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
@@ -106,7 +112,7 @@ class PostProcessing(Component):
         # Create renderBuffer object
         RBO = gl.glGenRenderbuffers(1)
         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, RBO)
-        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH24_STENCIL8, 800, 600)
+        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH24_STENCIL8, GLOBAL.WINDOW_DIMENSIONS[0], GLOBAL.WINDOW_DIMENSIONS[1])
         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, 0)
         gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT, gl.GL_RENDERBUFFER, RBO)
         

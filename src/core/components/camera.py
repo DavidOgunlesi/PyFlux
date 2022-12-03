@@ -1,20 +1,16 @@
-import ctypes
-import time
+import copy
+import math
 
 import glm
-import numpy as np
-import OpenGL.GL as gl
 import pygame as pg
-from core.constants import FLOAT_SIZE
-from core.material import Material
 from pygame.locals import *
 
-from core.component import Component
-import math
 import core.gametime as gm
+import core.globals as GLOBAL
 import core.input as input
-from core.components.transform import Transform
-import copy
+from core.component import Component
+
+
 class Camera(Component):
     def Copy(self) -> Component:
         c = Camera()
@@ -66,7 +62,7 @@ class Camera(Component):
     
     def Update(self):
         if self.projType == 0:
-            self.projection = glm.perspective(glm.radians(self.fov*self.zoomFactor), 800.0 / 600.0, self.near, self.far)
+            self.projection = glm.perspective(glm.radians(self.fov*self.zoomFactor), GLOBAL.WINDOW_DIMENSIONS[0]/ GLOBAL.WINDOW_DIMENSIONS[1], self.near, self.far)
         else:
             self.projection = glm.ortho(self.left*self.zoomFactor, self.right*self.zoomFactor, self.bottom*self.zoomFactor, self.top*self.zoomFactor, self.near, self.far)
             glm.ortho(0.0, 4.0, 0.0, 3.0, 0.1, 100.0)

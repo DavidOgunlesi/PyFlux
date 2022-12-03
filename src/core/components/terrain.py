@@ -1,29 +1,27 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple, List, Dict, Any, Tuple
-from core.texture import GeneratedTexture, Texture
-from core.component import Component
-from core.components.mesh import Mesh
-from core.primitives import PRIMITIVE
-from core.shader import Shader
-from core.object import Object
-from core.material import Material
-import OpenGL.GL as gl
-import glm
-import core.gametime as gametime
-import core.globals as GLOBAL
-import pygame as pg
-from perlin_noise import PerlinNoise
-from core.collections.mesh import MeshCollection
-from core.components.modelRenderer import ModelRenderer
-import core.input as input
-import numpy as np
-from core.fileloader import MeshLoader
+
 import math
 import random
-
-
-import threading
 import time
+from typing import TYPE_CHECKING, Dict, Tuple
+
+import glm
+import numpy as np
+import OpenGL.GL as gl
+import pygame as pg
+from perlin_noise import PerlinNoise
+
+import core.gametime as gametime
+import core.input as input
+from core.collections.mesh import MeshCollection
+from core.component import Component
+from core.components.mesh import Mesh
+from core.components.modelRenderer import ModelRenderer
+from core.fileloader import MeshLoader
+from core.material import Material
+from core.object import Object
+from core.shader import Shader
+from core.texture import Texture
 
 if TYPE_CHECKING:
     from core.scene import Scene
@@ -112,7 +110,7 @@ class TerrainMesh(Component):
         mat.SetTexture(self.slopemap, gl.GL_TEXTURE8)
         mat.SetTexture(grassBladeTexture, gl.GL_TEXTURE9)
         meshRenderer.meshes[0].SetMaterial(mat)
-        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrain/vert", "env/lightmap/null_frag", geomShaderName="env/terrain/geom", tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval_lightmap"))
+        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrain/vert", "env/lightmap/null_frag", geomShaderName="env/terrain/geom_lightmap", tessControlShaderName="env/terrain/tess_cont", tessEvalShaderName="env/terrain/tess_eval"))
         meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrain)
         meshRenderer.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
         planeObj.AddComponent(meshRenderer)
@@ -138,7 +136,7 @@ class TerrainMesh(Component):
         mat.SetTexture(tree5, gl.GL_TEXTURE25)
         mat.SetTexture(tree6, gl.GL_TEXTURE26)
         meshRenderer.meshes[0].SetMaterial(mat)
-        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrainTrees/vert", "env/lightmap/null_frag", geomShaderName="env/terrainTrees/geom", tessControlShaderName="env/terrainTrees/tess_cont", tessEvalShaderName="env/terrainTrees/tess_eval_lightmap"))
+        meshRenderer.meshes[0].SetShadowPassShader(Shader("env/terrainTrees/vert", "env/lightmap/null_frag", geomShaderName="env/terrainTrees/geom_lightmap", tessControlShaderName="env/terrainTrees/tess_cont", tessEvalShaderName="env/terrainTrees/tess_eval"))
         meshRenderer.meshes[0].SetUniformPasser(self.PassUniformsTerrainTrees)
         meshRenderer.meshes[0].SetCullMode(Mesh.CULLMODE.NONE)
         treeFoliage.AddComponent(meshRenderer)

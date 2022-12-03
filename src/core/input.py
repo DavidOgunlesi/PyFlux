@@ -1,4 +1,5 @@
 import pygame as pg
+
 import core.eventsystem as eventsystem
 
 pressed_once = []
