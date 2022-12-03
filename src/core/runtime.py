@@ -72,9 +72,6 @@ class Renderer:
                 self.active = False
 
             if input.GetKeyPressed(pg.K_F1):
-                gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
-
-            if input.GetKeyPressed(pg.K_F2):
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
 
             self.scene.UpdateScene() 
@@ -163,6 +160,8 @@ class Renderer:
         #1) Render scene to post process framebuffer 1
         self.postProcessor.useFBO()
         self.RenderData(False)
+
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
         for effect in self.postProcessor.stack:
             #Render Quad with post processing effects with current FBO as texture
             # but render to other FBO
