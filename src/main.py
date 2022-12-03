@@ -205,7 +205,7 @@ def main():
     renderer.SetScene(scene)
     
     postProcessing = PostProcessing()
-    #postProcessing.AddPostProcessingEffect(PostProcessing.Inversion())
+    postProcessing.AddPostProcessingEffect(PostProcessing.Vignette(0.3))
     renderer.AddPostProcessing(postProcessing)
     
     renderer.InitRuntime()
